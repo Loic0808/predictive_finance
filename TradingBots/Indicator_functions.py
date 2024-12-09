@@ -31,3 +31,14 @@ class ATR():
         self.df = self.df.drop(columns=["TR", "Highest_High", "Lowest_Low"])
 
         return self.df
+
+class EMA():
+
+    def __init__(self, df):
+
+        self.df = df
+
+    def EMA_50(self, n=50):
+        self.df[ColumnNamesYF.EMA_50] = self.df[ColumnNamesYF.ADJ_CLOSE].ewm(span=n, adjust=False).mean()
+        return self.df
+
