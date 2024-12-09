@@ -4,7 +4,7 @@ from ColumnNames import ColumnNamesYF
 
 class EasyBot():
 
-    def __init__(self, bank_account) -> None:
+    def __init__(self, bank_account, df) -> None:
         self.step_1 = True
         self.step_2 = True
         self.step_3 = True
@@ -18,6 +18,9 @@ class EasyBot():
         self.buy_bool = True
 
         self.bank_account = bank_account
+
+        self.columns = df.columns
+        self.available_df = pd.DataFrame(self.columns)
 
     def price_below_EMA(self, df) -> bool:
         """ Is True if price is below 50 day EMA  """
@@ -178,28 +181,27 @@ class EasyBot():
         self.stop_loss = None 
 
         self.is_buy = False
+        self.available_df = pd.DataFrame(self.columns)
 
     def run_strat(self, df):
         for index, row in df.iterrows():
             row_df = pd.DataFrame([row])
-            available_df = pd.concat([available_df, row_df])
-            print(len(available_df))
+            self.available_df = pd.concat([self.available_df, row_df])
             print(self.bank_account)
 
-            if len(available_df) >= 3:
-                res = self.steps(available_df)
-                if not strat and (res == "invalid1" or res ==  "invalid2"):
-                    available_df = pd.DataFrame(columns=df.columns)
+            if len(self.available_df) >= 3:
+                res = self.steps(self.available_df)
+                if not self.strat and (res == "invalid1" or res ==  "invalid2"):
                     self.reinitialize_variables()
-                elif not strat and res == "buy":
-                    strat = True
+                elif not self.strat and res == "buy":
+                    self.strat = True
                     continue # Go directly to next candle
 
-                if strat:         
-                    res = self.trading_strategy(available_df)
+                if self.strat:         
+                    res = self.trading_strategy(self.available_df)
                     if res == "sell1" or res == "sell2":
-                        available_df = pd.DataFrame(columns=df.columns)
+
                         self.reinitialize_variables()
-                        strat = False
+                        self.strat = False
                     else:
                         continue
