@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from ColumnNames import ColumnNamesYF
+from TradingBots.ColumnNames import ColumnNamesYF
 
 class EasyBot():
 

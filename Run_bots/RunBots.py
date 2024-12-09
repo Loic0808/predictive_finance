@@ -5,3 +5,4 @@ import plotly.graph_objects as go
 
 from datetime import datetime
 
+from TradingBots.EasyBot import EasyBot
