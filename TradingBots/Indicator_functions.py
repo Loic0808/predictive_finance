@@ -1,12 +1,10 @@
-import pandas as pd
 from TradingBots.ColumnNames import ColumnNamesYF
 
-
-class ATR:
+class ATR():
     def __init__(self, df):
         self.df = df
 
-    def calculate_atr(self, n):
+    def __calculate_atr(self, n):
         # Calculate the True Range (TR)
         self.df["TR"] = self.df[[ColumnNamesYF.HIGH, ColumnNamesYF.LOW, ColumnNamesYF.CLOSE]].max(axis=1) - self.df[
             [ColumnNamesYF.HIGH, ColumnNamesYF.LOW, ColumnNamesYF.CLOSE]
@@ -20,7 +18,7 @@ class ATR:
 
     def calculate_chandelier_exit(self, n=22, multiplier=3):
         # Calculate the ATR
-        self.df = self.calculate_atr(self.df, n)
+        self.df = self.__calculate_atr(n)
 
         # Calculate the highest high and lowest low over the lookback period
         self.df["Highest_High"] = self.df[ColumnNamesYF.HIGH].rolling(window=n).max()

@@ -5,22 +5,9 @@ from TradingBots.ColumnNames import ColumnNamesYF
 class EasyBot():
 
     def __init__(self, bank_account, df) -> None:
-        self.step_1 = True
-        self.step_2 = True
-        self.step_3 = True
-
-        self.high_point = None
-        self.len_high_point_candle = None
-        self.close_buy = None
-        self.stop_loss = None
-
-        self.is_buy = False
-        self.buy_bool = True
-
         self.bank_account = bank_account
 
         self.columns = df.columns
-        self.available_df = pd.DataFrame(self.columns)
 
     def price_below_EMA(self, df) -> bool:
         """ Is True if price is below 50 day EMA  """
@@ -167,7 +154,6 @@ class EasyBot():
     
 
     def reinitialize_variables(self) -> None:
-
         self.step_1 = True
         self.step_2 = True
         self.step_3 = True
@@ -184,6 +170,7 @@ class EasyBot():
         self.available_df = pd.DataFrame(self.columns)
 
     def run_strat(self, df):
+        self.reinitialize_variables()
         for index, row in df.iterrows():
             row_df = pd.DataFrame([row])
             self.available_df = pd.concat([self.available_df, row_df])
