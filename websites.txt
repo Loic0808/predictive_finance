@@ -3,3 +3,8 @@ https://algotrading101.com/learn/interactive-brokers-python-api-native-guide/
 
 Websites for backtesting of algorithms
 https://www.quantstart.com/articles/backtesting-systematic-trading-strategies-in-python-considerations-and-open-source-frameworks/
+
+For broker websites try:
+-Webull
+-Robinhood
+-Saxo Bank or XTB
