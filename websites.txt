@@ -1,6 +1,9 @@
 Trading bot with DRL
 https://medium.com/datapebbles/building-a-trading-bot-with-deep-reinforcement-learning-drl-b9519a8ba2ac
 
+Library with methods for quants
+https://github.com/ranaroussi/quantstats
+
 How to implement the interactive brokers API
 https://algotrading101.com/learn/interactive-brokers-python-api-native-guide/
 
