@@ -6,7 +6,7 @@ from alpaca.trading.enums import OrderSide, TimeInForce, AssetClass
 
 from alpaca.data import CryptoHistoricalDataClient, StockHistoricalDataClient, OptionHistoricalDataClient
 from alpaca.data.live import CryptoDataStream, StockDataStream, OptionDataStream
-from alpaca.data.requests import CryptoBarsRequest, StockLatestQuoteRequest
+from alpaca.data.requests import CryptoBarsRequest, StockBarsRequest, OptionBarsRequest, StockLatestQuoteRequest
 from alpaca.data.timeframe import TimeFrame
 from datetime import datetime
 
@@ -59,10 +59,11 @@ class AlpacaGetData(GetDataAPI):
             self.client = CryptoHistoricalDataClient()
             self.stream = CryptoDataStream(self.API_key[0], self.API_key[1])
 
-    def __parse_date(date_string):
+    def __parse_date(self, date_string):
+
         date_formats = [
-            "%Y-%m-%d %H:%M:%S",  
-            "%Y-%m-%d"     
+            "%Y-%m-%d",
+            "%Y-%m-%d %H:%M:%S" 
         ]
         
         for date_format in date_formats:
@@ -73,6 +74,61 @@ class AlpacaGetData(GetDataAPI):
         
         raise ValueError(f"Date string '{date_string}' is not in a recognized format.")
     
+    def __convert_interval_to_timeframe(self, interval: str):
+        # Map your interval string to the appropriate TimeFrame object
+        if interval.lower() == "week":
+            return TimeFrame.Week
+        elif interval.lower() == "Month":
+            return TimeFrame.Month
+        elif interval.lower() == "hour":
+            return TimeFrame.Hour
+        elif interval.lower() == "day":
+            return TimeFrame.Day
+        elif interval.lower() == "minute":
+            return TimeFrame.Minute
+        else:
+            raise ValueError(f"Unsupported interval: {interval}")
+
+    def get_historical_market_data(self, symbol: list[str], interval: str, start_date: str, end_date: str):
+
+        timeframe = self.__convert_interval_to_timeframe(interval)
+
+        if self.asset_class == AssetClass.US_EQUITY:
+            stock_request_params = StockBarsRequest(
+                symbol_or_symbols=symbol,
+                timeframe=timeframe,
+                start=self.__parse_date(start_date),
+                end=self.__parse_date(end_date)
+            )
+
+            bars = self.client.get_stock_bars(stock_request_params)
+
+        elif self.asset_class == AssetClass.US_OPTION:
+
+            option_request_params = OptionBarsRequest(
+                symbol_or_symbols=symbol,  # Example option symbol
+                timeframe=timeframe,
+                start=self.__parse_date(start_date),
+                end=self.__parse_date(end_date)
+            )
+
+            bars = self.client.get_option_bars(option_request_params)
+
+        else:
+            crypto_request_params = CryptoBarsRequest(
+                symbol_or_symbols=symbol,
+                timeframe=timeframe,
+                start=self.__parse_date(start_date),
+                end=self.__parse_date(end_date)
+            )
+
+            bars = self.client.get_crypto_bars(crypto_request_params)
+
+        # access bars as list - important to note that you must access by symbol key
+        # even for a single symbol request - models are agnostic to number of symbols bars["BTC/USD"]
+
+        return bars.df
+    
     def get_latest_market_quotes(self, symbol: list[str]):
 
         # multi symbol request - single symbol is similar
@@ -81,35 +137,9 @@ class AlpacaGetData(GetDataAPI):
         latest_multisymbol_quotes = self.client.get_stock_latest_quote(multisymbol_request_params)
 
         return latest_multisymbol_quotes
-
-    def get_historical_market_data(self, symbol: list[str], timeframe: str, start_date: str, end_date: str):
-        if timeframe == "Min":
-            frame = TimeFrame.Minute
-        elif timeframe == "Hour":
-            frame = TimeFrame.Hour
-        elif timeframe == "Day":
-            frame = TimeFrame.Day
-        elif timeframe == "Week":
-            frame = TimeFrame.Week
-        else:
-            frame = TimeFrame.Month
-
-        request_params = CryptoBarsRequest(
-                        symbol_or_symbols=symbol,
-                        timeframe=frame,
-                        start=self.__parse_date(start_date),
-                        end=self.__parse_date(end_date)
-                 )
-
-        bars = self.client.get_crypto_bars(request_params)
-
-        # access bars as list - important to note that you must access by symbol key
-        # even for a single symbol request - models are agnostic to number of symbols bars["BTC/USD"]
-
-        return bars.df
     
     # async handler
-    async def __quote_data_handler(data):
+    async def __quote_data_handler(self, data):
             # quote data will arrive here
             print(data)
     
