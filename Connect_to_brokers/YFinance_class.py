@@ -1,5 +1,5 @@
 import yfinance as yf
-from Broker_class import GetDataAPI
+from Connect_to_brokers.Broker_class import GetDataAPI
 
 class YFinanceGetData(GetDataAPI):
 
@@ -13,6 +13,9 @@ class YFinanceGetData(GetDataAPI):
         df.reset_index(inplace=True)
 
         return df
+    
+    def get_live_market_data(self, symbol, timeframe):
+        return None
  
         
 
