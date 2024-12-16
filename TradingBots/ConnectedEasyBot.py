@@ -1,14 +1,42 @@
 import pandas as pd
 import numpy as np
-from TradingBots.ColumnNames import ColumnNamesYF
+from datetime import datetime
 
-# I will need to be able to pass a broker to the class
+from TradingBots.ColumnNames import ColumnNamesYF
+from Connect_to_brokers.Broker_class import TradingAPI
+from Connect_to_brokers.Alpaca_class import AlpacaTradingClass, AlpacaGetData
 
 class EasyBot():
 
-    def __init__(self, bank_account, df) -> None:
-        self.bank_account = bank_account
+    """
+    1) Initialize the date/time when the class object is created
+    2) Fetch data corresponding to that time
+    2) Every unit of time (15 min, 1 hour, etc) we consider the new input data and we append it tou our current
+       dataframe
+    """
+
+    def __init__(self, api: TradingAPI, API_key: list[str], df) -> None:
+        self.api = api
+        self.API_key = API_key
         self.columns = df.columns
+        self.current_time = datetime.now()
+
+    # Will be private method in the future, connected to client info directly
+    def get_client_data(self, trading_asset: str, time_frame: str, bank_account):
+        self.trading_asset = trading_asset
+        self.bank_account = bank_account
+        self.time_frame = time_frame
+
+    def __initialize_dataframe(self):
+        alpaca_data_loader = AlpacaGetData([self.API_key[0], self.API_key[1]], self.trading_asset)
+        # Depending the timeframe we keep only hours of the current_time, or in other cases also min and sec
+        # Implement it here
+        self.df = alpaca_data_loader.get_historical_market_data(
+            [self.trading_asset],
+            self.time_frame, 
+            "2024-11-18 15:30:00", 
+            "2024-11-18 16:30:00"
+        )
 
     def __price_below_EMA(self, df) -> bool:
         """ Is True if price is below 50 day EMA  """

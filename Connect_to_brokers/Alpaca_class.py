@@ -18,6 +18,9 @@ class AlpacaTradingClass(TradingAPI):
         # paper=True enables paper trading
         self.trading_client = TradingClient(self.API_key[0], self.API_key[1], paper=True)
 
+    def get_order_status(self, order_id):
+        return None
+
     def get_assets(self):
         # search for assets
         search_params = GetAssetsRequest(asset_class=self.asset_class)
@@ -78,7 +81,7 @@ class AlpacaGetData(GetDataAPI):
         # Map your interval string to the appropriate TimeFrame object
         if interval.lower() == "week":
             return TimeFrame.Week
-        elif interval.lower() == "Month":
+        elif interval.lower() == "month":
             return TimeFrame.Month
         elif interval.lower() == "hour":
             return TimeFrame.Hour
