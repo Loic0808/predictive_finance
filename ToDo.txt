@@ -1,0 +1,10 @@
+1) Look if there is 15 min available data
+2) Implement the following logic: 
+    -get historical data of a certain interval [t1, t2] (in the past) to be able to compute EMA and other indicators
+    -on the remaining interval [t2, now] run the algorithm like I did it with the Yf data (i.e. with available data and all). If there is a buy command before current time, ignore it and restart. Else we stay in 
+     the strategy
+    -If we arrive to current time we need an asyncio function and then we read data once it is available and we continue with the current implementation
+3) Implement buy and sell functions from Alpaca
+4) Test with Yfinance class to see if I have the same results
+
+Questions: If there is only 1 min data available, how much data do I take? can I make it 15 min intervals?

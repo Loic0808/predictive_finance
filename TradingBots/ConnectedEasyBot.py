@@ -20,17 +20,21 @@ class EasyBot():
     5) In the future maybe create a python file where all the data is stored, historical data and so, so that I don't need to load the data inside each class
     """
 
-    def __init__(self, trading_api: TradingAPI, load_data: GetDataAPI, column_names: ColumnNamesBrokers, API_key: list[str]) -> None:
+    def __init__(self, trading_api: TradingAPI, load_data: GetDataAPI, column_names: ColumnNamesBrokers, stocks_owned, API_key: list[str]) -> None:
 
         self.trading_api = trading_api
         self.load_data = load_data
         self.API_key = API_key
         self.column_names = column_names
 
+        # Needs to be initialized with Alpaca
+        self.stocks_owned = stocks_owned
+
     # Will be private method in the future, connected to client info directly
-    def get_client_data(self, trading_asset: str, symbol: str, bank_account, time_frame: str = "15Min"):
+    def get_client_data(self, trading_asset: str, symbol: str, quantity: float, bank_account, time_frame: str = "15Min"):
         self.trading_asset = trading_asset # Stocks, options or crypto
         self.symbol = symbol
+        self.quantity = quantity
         self.time_frame = time_frame
         self.bank_account = bank_account
 
@@ -92,7 +96,7 @@ class EasyBot():
     def __get_swing_high_point_before_pullback(self):
         """Gets high point before pullback"""
 
-        self.high_point = self.df.High.iloc[-3]
+        self.high_point = self.df[self.column_names.HIGH].iloc[-3]
 
         self.len_high_point_candle = self.df[self.column_names.CLOSE].iloc[-3] - self.df[self.column_names.OPEN].iloc[-3]
 
@@ -137,7 +141,7 @@ class EasyBot():
     def __take_profit_target(self):
         """Take profit function"""
         range = np.abs(self.close_buy - self.stop_loss)
-        if self.df.High.iloc[-1] >= self.close_buy + 2*range:
+        if self.df[self.column_names.HIGH][-1] >= self.close_buy + 2*range:
             return True
         return False
 
@@ -176,20 +180,18 @@ class EasyBot():
     def __trading_strategy(self):
 
         if self.buy_bool:
-            print("BUY")
-            self.bank_account -= 100*self.df[self.column_names.OPEN].iloc[-1]
+            self.trading_api.place_order(self.symbol, self.quantity, "buy")
+            self.stocks_owned += self.quantity
             self.buy_bool = False
             return 0
         
         # Implement the stop loss functions here
         if self.__stop_loss_f():
-            print("sell and loose small amount")
-            self.bank_account += 100*self.df[self.column_names.OPEN].iloc[-1]
+            self.trading_api.place_order(self.symbol, self.quantity, "buy")
             return "sell1"
 
         if self.__take_profit_target():
             print("sell and make profit")
-            self.bank_account += 100*self.df[self.column_names.OPEN].iloc[-1]
             return "sell2"
         
         else:
