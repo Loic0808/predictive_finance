@@ -1,8 +1,12 @@
 import pandas as pd
 import numpy as np
-from TradingBots.ColumnNames import ColumnNamesYF
 
-# I will need to be able to pass a broker to the class
+class ColumnNamesYF:
+    HIGH = "High"
+    LOW = "Low"
+    OPEN = "Open"
+    CLOSE = "Close"
+    ADJ_CLOSE = "Adj Close"
 
 class EasyBot():
 
