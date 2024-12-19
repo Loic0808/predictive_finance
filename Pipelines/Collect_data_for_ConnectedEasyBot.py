@@ -44,6 +44,9 @@ wss_client.subscribe_quotes(quote_data_handler, "MSFT")
 
 wss_client.run()
 
+# Data  looks like 
+# symbol='MSFT' timestamp=datetime.datetime(2024, 12, 19, 17, 55, 10, 400383, tzinfo=datetime.timezone.utc) bid_price=408.0 bid_size=1.0 bid_exchange='V' ask_price=445.0 ask_size=1.0 ask_exchange='V' conditions=['R'] tape='C'
+
 
 wss_client.stop()
     
