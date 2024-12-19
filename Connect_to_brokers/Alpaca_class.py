@@ -148,6 +148,7 @@ class AlpacaGetData(GetDataAPI):
     
     def get_live_market_data(self, symbol: list[str], timeframe: str):
 
+        # Works only for 1 symbol
         self.stream.subscribe_quotes(self.__quote_data_handler, symbol)
 
         # Doesn't work when market is closed
