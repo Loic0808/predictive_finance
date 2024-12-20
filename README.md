@@ -2,9 +2,9 @@
 
 ### **Requirements and Goals**
    - **Target Audience:** 
-        -Small traders which want to improve their trading\\
-        -Support professional traders in their activities\\
-        -Provide financial support to small companies, help them manage their finances\\
+        -Small traders which want to improve their trading\
+        -Support professional traders in their activities\
+        -Provide financial support to small companies, help them manage their finances\
         -Larger financial industries like banks and hedge funds, provide them with the strong algorithms. 
    - **Core Features:** 
         -Make difficult mathematical and machine learning tools available for all in the finance domain.
