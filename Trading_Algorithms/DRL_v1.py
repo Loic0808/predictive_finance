@@ -19,7 +19,7 @@ class StockTradingEnv(gym.Env):
         self.commission_fee = commission_fee
         self.slippage_cost = slippage_cost
         
-        self.action_space = spaces.Box(low=np.array([-1, 0]), high=np.array([1, 1]), shape=(2,))  # (Action, Amount) where Action: -1: Buy, 0: Hold, 1: Sell
+        self.action_space = spaces.Box(low=np.array([-1, 0]), high=np.array([1, 1]), shape=(2,))  # (Action, Amount) where Action: 1: Buy, 0: Hold, -1: Sell
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(1,))
         
         self.render_df = pd.DataFrame()
@@ -115,3 +115,6 @@ class StockTradingEnv(gym.Env):
                     'rv'
                     )
                 plt.text(idx, df.loc[idx]["price"] + 3, df.loc[idx]['amount'], c= 'red',fontsize=8, horizontalalignment='center', verticalalignment='center')        
+
+    def info(self):
+        return self.render_df.set_index('Date')
