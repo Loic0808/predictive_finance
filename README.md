@@ -1,5 +1,7 @@
 # Roadmap to Saas platform
 
+Important reminder, break these steps down into small pieces, don't do all at once.
+
 ### **Requirements and Goals**
    - **Target Audience:**\
         -Small traders which want to improve their trading\
