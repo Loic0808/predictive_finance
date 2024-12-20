@@ -80,3 +80,7 @@ Important reminder, break these steps down into small pieces, don't do all at on
    - **Initial Deployment:** Deploy your MVP to the cloud.
    - **Load Testing:** Conduct load testing to ensure the system can handle expected traffic.
 
+
+### Branch naming
+
+Creator_name/repo/functionality, e.g. Loic/Trading_bots/implement_DRL_bot
