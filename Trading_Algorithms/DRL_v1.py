@@ -41,7 +41,7 @@ class StockTradingEnv(gym.Env):
         amount = int(self.initial_balance * action[1] / current_price)
     
         if action[0] > 0:  # Buy
-            amount =  min( int(self.initial_balance * action[1] / current_price), int(self.balance / current_price * (1 + self.commission_fee + self.slippage_cost)))
+            amount =  min(int(self.initial_balance * action[1] / current_price), int(self.balance / current_price * (1 + self.commission_fee + self.slippage_cost)))
             if self.balance >= current_price * amount * (1 + self.commission_fee + self.slippage_cost):
                 self.stock_owned += amount
                 self.balance -= current_price * amount * (1 + self.commission_fee + self.slippage_cost)
@@ -81,7 +81,12 @@ class StockTradingEnv(gym.Env):
     
     def render(self, action, amount, current_portfolio_value, mode = None):
         current_date = self.date[self.current_step]
-        today_action =  'buy' if action[0] > 0 else 'sell'
+        if action[0] > 0 and amount > 0:
+            today_action =  'buy'
+        elif action[0] < 0 and amount > 0:
+            today_action = 'sell'
+        else:
+            today_action =  'hold'
         current_price = self.stock_price_history[self.current_step]
         
         if mode == 'human':
@@ -89,32 +94,10 @@ class StockTradingEnv(gym.Env):
         else:
             pass
         dict = {
-            'Date': [current_date], 'market_value': [current_portfolio_value], 'balance': [self.balance], 'stock_owned': [self.stock_owned], 'price': [current_price], 'action': [today_action], 'amount':[amount]
+            'Date': [current_date], 'portfolio_value': [current_portfolio_value], 'balance': [self.balance], 'stock_owned': [self.stock_owned], 'price': [current_price], 'action': [today_action], 'action_value': [action[0]], 'amount':[amount]
         }
         step_df = pd.DataFrame.from_dict(dict)
         self.render_df = pd.concat([self.render_df, step_df], ignore_index=True)
     
-    def render_all(self):
-        df = self.render_df.set_index('Date')       
-        fig, ax = plt.subplots(figsize=(18, 6)) 
-        df.plot( y="market_value" , use_index=True,  ax = ax, style='--' , color='lightgrey') 
-        df.plot( y="price" , use_index=True,  ax = ax , secondary_y = True , color='black')
-         
-        for idx in df.index.tolist():
-            if (df.loc[idx]['action'] == 'buy') & (df.loc[idx]['amount'] > 0):
-                plt.plot(
-                    idx,
-                    df.loc[idx]["price"] - 1,
-                    'g^'
-                )
-                plt.text(idx, df.loc[idx]["price"]- 3, df.loc[idx]['amount'] , c= 'green',fontsize=8, horizontalalignment='center', verticalalignment='center')
-            elif (df.loc[idx]['action'] == 'sell') & (df.loc[idx]['amount'] > 0):
-                plt.plot(
-                    idx,
-                    df.loc[idx]["price"] + 1,
-                    'rv'
-                    )
-                plt.text(idx, df.loc[idx]["price"] + 3, df.loc[idx]['amount'], c= 'red',fontsize=8, horizontalalignment='center', verticalalignment='center')        
-
     def info(self):
-        return self.render_df.set_index('Date')
+        return self.render_df

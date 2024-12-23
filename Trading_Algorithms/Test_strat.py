@@ -23,7 +23,7 @@ df_test = df_test.rename(columns={"Datetime": "date", "Adj Close": "adj_close"})
 env_test = StockTradingEnv(df_test, initial_balance=100000, commission_fee=0.0001, slippage_cost=0.005)
 
 # Load model
-model = PPO.load("Trading_Algorithms/DRL_models/ppo_msft_v1_run1", env=env_test)
+model = PPO.load(f"Trading_Algorithms/DRL_models/ppo_{symbol}_{interval}_v1_run1", env=env_test)
 
 # Run model
 vec_env = model.get_env()
@@ -32,4 +32,7 @@ for i in range(len(df_test['adj_close'])):
     action, _state = model.predict(obs)
     obs, reward, done, info = vec_env.step(action)
     
-env_test.render_all()
+#env_test.render_all()
+test_df = env_test.info()
+
+test_df.to_csv(f"Trading_Algorithms/Backtesting/Strat_dataframes/ppo_{symbol}_{interval}_v1_run1.csv", index=False)

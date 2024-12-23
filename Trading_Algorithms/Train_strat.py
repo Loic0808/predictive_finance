@@ -26,7 +26,5 @@ env_train = StockTradingEnv(df_train, initial_balance=100000, commission_fee=0.0
 model = PPO("MlpPolicy", env_train, verbose=0)
 model.learn(total_timesteps=100_000, progress_bar=True)
 
-model.save("DRL_models/ppo_msft_v1_run1")
-
-
+model.save(f"Trading_Algorithms/DRL_models/ppo_{symbol}_{interval}_v1_run1")
 

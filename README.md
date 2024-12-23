@@ -19,7 +19,7 @@ Important reminder, break these steps down into small pieces, don't do all at on
 ## Steps
 
 ### 1. **Develop a Minimum Viable Product (MVP)**
-   - **Basic Functionality:**\ 
+   - **Basic Functionality:** 
         Basic versions of algorithms and essential features at the beginning.\
         -Implement a deep reinforcement learning trading algorithm\
         -A mathematical trading strategy\
