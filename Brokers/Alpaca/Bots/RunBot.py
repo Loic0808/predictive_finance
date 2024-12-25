@@ -5,8 +5,8 @@ import plotly.graph_objects as go
 
 from datetime import datetime
 
-from TradingBots.EasyBot import EasyBot
-from TradingBots.Indicator_functions import ATR, EMA
+from EasyBot import EasyBot
+from Indicators import ATR, EMA
 
 dataF = yf.download("MSFT", start="2024-10-15", end="2024-12-09", interval='15m')
 dataF.columns = dataF.columns.droplevel(1)

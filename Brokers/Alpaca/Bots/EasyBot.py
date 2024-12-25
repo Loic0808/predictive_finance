@@ -7,6 +7,14 @@ class ColumnNamesYF:
     OPEN = "Open"
     CLOSE = "Close"
     ADJ_CLOSE = "Adj Close"
+    EMA_50 = "EMA_50"
+
+class ColumnNames:
+    HIGH = "high"
+    LOW = "low"
+    OPEN = "open"
+    CLOSE = "close"
+    EMA_50 = "EMA_50"
 
 class EasyBot():
 
