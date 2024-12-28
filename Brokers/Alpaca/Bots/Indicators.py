@@ -1,4 +1,4 @@
-from Brokers.Alpaca.Testing.EasyBot import ColumnNames
+from Connected_EasyBot import ColumnNames
 
 class ATR():
     def __init__(self, df):
