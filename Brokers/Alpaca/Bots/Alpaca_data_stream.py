@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 import asyncio
 import pandas as pd
 import threading
+import time
 
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from alpaca.data.historical.stock import StockHistoricalDataClient
@@ -32,10 +33,10 @@ now = datetime.now(ZoneInfo("America/New_York"))
 # EasyBot will run every minute
 req = StockBarsRequest(
     symbol_or_symbols = [symbol],
-    timeframe=TimeFrame(amount = 15, unit = TimeFrameUnit.Minute), # specify timeframe
-    start = now - timedelta(days = 51),                          # specify start datetime, default=the beginning of the current day.
-    # end_date=None,                                        # specify end datetime, default=now
-    #limit = 2,                                               # specify limit
+    timeframe=TimeFrame(amount = 1, unit = TimeFrameUnit.Minute),
+    start = now - timedelta(days = 40),                          
+    # end_date=None,                                  
+    #limit = 2,                    
 )
 
 df = stock_historical_data_client.get_stock_bars(req).df
@@ -58,19 +59,7 @@ data_stream_list = []
 symbols = [symbol]
 
 
-async def stock_data_stream_handler(bar):
-    data = {
-        'timestamp': [bar.timestamp],
-        'open': [bar.open],
-        'high': [bar.high],
-        'low': [bar.low],
-        'close': [bar.close],
-        'volume': [bar.volume]
-    }
-
-    data_stream_list.append(data)
-
-
+# Read data candles every minute
 def consumer_thread():
     try:
         # make sure we have an event loop, if not create a new one
@@ -80,14 +69,32 @@ def consumer_thread():
         asyncio.set_event_loop(asyncio.new_event_loop())
 
     global data_stream
+    global data_stream_list
+
     data_stream = StockDataStream(api_key, secret_key)
+
+    async def stock_data_stream_handler(bar):
+        data = {
+            'timestamp': [bar.timestamp],
+            'open': [bar.open],
+            'high': [bar.high],
+            'low': [bar.low],
+            'close': [bar.close],
+            'volume': [bar.volume]
+        }
+        data_stream_list.append(data)
 
     data_stream.subscribe_bars(stock_data_stream_handler, *symbols)
 
     data_stream.run()
 
-
 def run_bot():
+    print("Test")
+    time.sleep(5)
+
+    global data_stream_list
+    res = False
+
     df_stream = pd.DataFrame(data_stream_list)
 
     dataF = pd.concat([df, df_stream], axis=0, ignore_index=True)
@@ -96,9 +103,14 @@ def run_bot():
     dataF = EMA(dataF).EMA_50(50)
     dataF = ATR(dataF).calculate_chandelier_exit()
 
-    data_of_interest = dataF[-len(data_stream_list):]
+    # If there is no datastream there is no reason to run the following
+    if data_stream_list:
+        data_of_interest = dataF[-len(data_stream_list):]
 
-    trading_bot.run_strat(data_of_interest)
+        res = trading_bot.run_strat(data_of_interest)
+
+    if res:
+        data_stream_list = []
 
 
 if __name__ == '__main__':
@@ -107,6 +119,7 @@ if __name__ == '__main__':
     # While time between 9.30 and 4 pm and day not sat or sun
     while 1:
         threading.Thread(target=consumer_thread).start()
+        time.sleep(5)
         loop.run_until_complete(data_stream.stop_ws())
 
         # Run the additional function in a separate thread
@@ -115,3 +128,7 @@ if __name__ == '__main__':
         
         # Wait for the additional function to complete
         additional_thread.join()
+
+        time.sleep(5)
+
+

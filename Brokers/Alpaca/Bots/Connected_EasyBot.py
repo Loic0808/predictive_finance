@@ -7,17 +7,7 @@ from alpaca.trading.enums import OrderClass, OrderSide, TimeInForce
 
 import numpy as np
 
-
 # In a later step create abstract classes for the column names
-class ColumnNamesYF:
-    HIGH = "High"
-    LOW = "Low"
-    OPEN = "Open"
-    CLOSE = "Close"
-    ADJ_CLOSE = "Adj Close"
-    EMA_50 = "EMA_50"
-
-
 class ColumnNames:
     HIGH = "high"
     LOW = "low"
@@ -35,6 +25,13 @@ class EasyBot:
     def __init__(self, symbol, trading_client) -> None:
         self.symbol = symbol
         self.trading_client = trading_client
+
+        self.step_1 = True
+        self.step_2 = True
+        self.step_3 = True
+
+        self.high_point = None
+        self.len_high_point_candle = None
 
     def __price_below_EMA(self, df) -> bool:
         """Is True if price is below 50 day EMA"""
@@ -115,10 +112,10 @@ class EasyBot:
 
         range = np.abs(close_buy - stop_loss)
 
-        if self.close_buy >= self.high_point:
+        if close_buy >= self.high_point:
             req = MarketOrderRequest(
                 symbol=self.symbol,
-                qty=5,
+                qty=10,
                 side=OrderSide.BUY,
                 time_in_force=TimeInForce.DAY,
                 order_class=OrderClass.BRACKET,
@@ -131,6 +128,7 @@ class EasyBot:
         return False
 
     def __steps(self, df):
+
         if self.step_1 and self.__price_below_EMA(df):
             # Put a logging instead of a print
             print("Price below EMA")
@@ -148,12 +146,12 @@ class EasyBot:
             )
 
         if not self.step_3 and self.__invalid_trade_1(df):
-            print("Invalid trade1")
+            print("Invalid trade")
             # Start over
             return "invalid1"
 
         if not self.step_3 and self.__invalid_trade_2(df):
-            print("Invalid trade2")
+            print("Invalid trade")
             # Start over
             return "invalid2"
 
@@ -169,23 +167,20 @@ class EasyBot:
 
         self.high_point = None
         self.len_high_point_candle = None
-        self.close_buy = None
-        self.stop_loss = None
 
-        self.is_buy = False
-
-    def run_strat(self, start, available_df):
-        # I need to initialize the variables but only once!
-        if start:
-            self.__reinitialize_variables()
+    def run_strat(self, available_df):
 
         if len(available_df) >= 3:
             res = self.__steps(available_df)
             if res == "invalid1" or res == "invalid2":
                 self.__reinitialize_variables()
+                return 1
                 # Here I also need to reinitialize the availale data -> do a separate class for this
             elif res == "buy":
                 self.__reinitialize_variables()
+                return 1
+            
+        return 0
 
 
 """
