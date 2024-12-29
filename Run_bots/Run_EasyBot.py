@@ -1,4 +1,4 @@
-from Alpaca_keyes import API_KEY, SECRET_KEY
+from Brokers.Alpaca.Alpaca_keyes import API_KEY, SECRET_KEY
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -14,8 +14,8 @@ from alpaca.data.requests import StockBarsRequest
 from alpaca.trading.client import TradingClient
 from alpaca.data.live.stock import StockDataStream
 
-from Indicators import EMA, ATR
-from Connected_EasyBot import EasyBot
+from Utils.Indicators import EMA, ATR
+from Trading_bots.Connected_EasyBot import EasyBot
 
 api_key = API_KEY
 secret_key = SECRET_KEY

@@ -1,4 +1,4 @@
-from Connected_EasyBot import ColumnNames
+from Trading_bots.Connected_EasyBot import ColumnNames
 
 class ATR():
     def __init__(self, df):
