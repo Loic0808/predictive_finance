@@ -74,6 +74,7 @@ def consumer_thread():
     data_stream = StockDataStream(api_key, secret_key)
 
     async def stock_data_stream_handler(bar):
+        print(bar.timestamp)
         data = {
             'timestamp': [bar.timestamp],
             'open': [bar.open],
@@ -90,8 +91,9 @@ def consumer_thread():
 
 def run_bot():
     print("Test")
-    time.sleep(5)
+    print(datetime.now())
 
+    
     global data_stream_list
     res = False
 
@@ -111,6 +113,7 @@ def run_bot():
 
     if res:
         data_stream_list = []
+        
 
 
 if __name__ == '__main__':
@@ -119,7 +122,7 @@ if __name__ == '__main__':
     # While time between 9.30 and 4 pm and day not sat or sun
     while 1:
         threading.Thread(target=consumer_thread).start()
-        time.sleep(5)
+        time.sleep(60)
         loop.run_until_complete(data_stream.stop_ws())
 
         # Run the additional function in a separate thread
@@ -129,6 +132,6 @@ if __name__ == '__main__':
         # Wait for the additional function to complete
         additional_thread.join()
 
-        time.sleep(5)
+        #time.sleep(60)
 
 
