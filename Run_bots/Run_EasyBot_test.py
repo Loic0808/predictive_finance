@@ -62,11 +62,27 @@ def wait_until_next_minute():
     sleep_time = (next_minute - now).total_seconds()
     time.sleep(sleep_time)
 
+# We assume that the bot and the live_data scripts are started at close times
+i = 0
+
 while True:
-    df_stream = pd.read_csv('Data/live_data.csv') 
-    dataF = pd.concat([df, df_stream], axis=0, ignore_index=True)
-    print(dataF)
-    wait_until_next_minute()
+    df_stream = pd.read_csv(
+        '/Users/doblerloic/Desktop/Finance_prediction_project/predictive_finance/Brokers/Alpaca/Data/live_data.csv'
+        ) 
+    new_time = df_stream['timestamp'].iloc[-1]
+    if len(df_stream) == i+1: 
+        old_time = df_stream['timestamp'].iloc[-1]
+
+        dataF = pd.concat([df, df_stream], axis=0, ignore_index=True)
+        print(dataF)
+        if new_time != old_time or i == 0:
+            i+=1
+        wait_until_next_minute()
+    # Not sure if this implementation is the correct one
+
+    # it can happen that we have data loss, i.e. one minute can be skipped and then we land directly at the next 
+    # minute. This is a problem because then the logic of the length above does not work anymore.
+    # I need to implement the following: icrement i only if the new time is not the same as the old time
 
 
 """dataF = EMA(dataF).EMA_50(50)

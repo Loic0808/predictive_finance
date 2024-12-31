@@ -4,20 +4,14 @@ import pandas as pd
 from alpaca.data.live.stock import StockDataStream
 from Brokers.Alpaca.Alpaca_keyes import API_KEY, SECRET_KEY
 
-
 def delete_csv_if_exists(file_path):
     # Check if the file exists
     if os.path.exists(file_path):
-        try:
-            # Delete the file
             os.remove(file_path)
-            print(f"Deleted the file: {file_path}")
-        except Exception as e:
-            print(f"Error deleting the file: {e}")
-    else:
-        print(f"No file found at: {file_path}")
+            
 
-delete_csv_if_exists('Data/live_data.csv')
+file_name = 'Data/live_data.csv'
+delete_csv_if_exists(file_name)
 
 
 api_key = API_KEY
@@ -40,7 +34,7 @@ async def stock_data_stream_handler(bar):
     }
     data_stream_list.append(data)
     df = pd.DataFrame(data_stream_list)
-    df.to_csv('Data/live_data.csv', index=False)  
+    df.to_csv(file_name, index=False)  
 
 
 symbols = [symbol]
