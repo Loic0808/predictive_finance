@@ -1,18 +1,17 @@
-from Brokers.Alpaca.Alpaca_keyes import API_KEY, SECRET_KEY
-from datetime import datetime, timezone, timedelta
-from zoneinfo import ZoneInfo
-
-import pandas as pd
 import time
 import pytz
+import pandas as pd
+
+from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from alpaca.data.historical.stock import StockHistoricalDataClient
 from alpaca.data.requests import StockBarsRequest
 
 from alpaca.trading.client import TradingClient
-from alpaca.data.live.stock import StockDataStream
 
+from Brokers.Alpaca.Alpaca_keyes import API_KEY, SECRET_KEY
 from Utils.Indicators import EMA, ATR
 from Trading_bots.Connected_EasyBot import EasyBot
 
@@ -82,38 +81,53 @@ def convert_df(df):
 i = 3
 j = 3
 
-# while time between trading hours:
-while True:
-    df_stream = pd.read_csv(
-        '/Users/doblerloic/Desktop/Finance_prediction_project/predictive_finance/Brokers/Alpaca/Data/live_data.csv'
-        ) 
+def is_market_open():
 
-    if len(df_stream) == i: 
-        df_stream = convert_df(df_stream)
-        dataF = pd.concat([df, df_stream], axis=0, ignore_index=True)
+    eastern = pytz.timezone('US/Eastern')
+    now = datetime.now(eastern)
 
-        dataF = EMA(dataF).EMA_50(50)
-        dataF = ATR(dataF).calculate_chandelier_exit()
+    market_open = time(9, 30)
+    market_close = time(16, 0)
 
-        data_of_interest = dataF[-j:]
-
-        res = trading_bot.run_strat(data_of_interest)
-
-        # If we buy or there is an invalid trade, we reinitialize the data
-        if res:
-            j = 1
-
-        i+=1
-        j+=1
-        # Only do skip to next minute if it is not already passed
-        if datetime.now(timezone.utc) - df_stream['timestamp'].iloc[-1] < timedelta(seconds=60):
-            wait_until_next_minute()
-        else:
-            continue
+    is_weekday = now.weekday() < 5
+    is_market_hours = market_open <= now.time() <= market_close
     
-    # Handle first minute and times where we have data loss
+    return is_weekday and is_market_hours
+
+while True:
+    if is_market_open():
+        df_stream = pd.read_csv(
+            '/Users/doblerloic/Desktop/Finance_prediction_project/predictive_finance/Brokers/Alpaca/Data/live_data.csv'
+        ) 
+        if len(df_stream) == i: 
+            df_stream = convert_df(df_stream)
+            dataF = pd.concat([df, df_stream], axis=0, ignore_index=True)
+
+            dataF = EMA(dataF).EMA_50(50)
+            dataF = ATR(dataF).calculate_chandelier_exit()
+
+            data_of_interest = dataF[-j:]
+
+            res = trading_bot.run_strat(data_of_interest)
+
+            # If we buy or there is an invalid trade, we reinitialize the data
+            if res:
+                j = 1
+
+            i+=1
+            j+=1
+            # Only do skip to next minute if it is not already passed
+            if datetime.now(timezone.utc) - df_stream['timestamp'].iloc[-1] < timedelta(seconds=60):
+                wait_until_next_minute()
+            else:
+                continue
+        
+        # Handle first minute and times where we have data loss
+        else:
+            time.sleep(30)
     else:
-        time.sleep(30)
+        print("Market is closed.")
+        break  
 
 
 """dataF = EMA(dataF).EMA_50(50)
