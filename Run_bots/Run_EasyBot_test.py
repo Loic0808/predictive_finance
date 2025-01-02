@@ -1,8 +1,10 @@
+import os
 import time
 import pytz
 import pandas as pd
 
-from datetime import datetime, timezone, timedelta
+import time as timemodule
+from datetime import datetime, time, timezone, timedelta
 from zoneinfo import ZoneInfo
 
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
@@ -17,6 +19,8 @@ from Trading_bots.Connected_EasyBot import EasyBot
 
 api_key = API_KEY
 secret_key = SECRET_KEY
+
+file_path = '/Users/doblerloic/Desktop/Finance_prediction_project/predictive_finance/Brokers/Alpaca/Data/live_data.csv'
 
 symbol = "TSLA"
 
@@ -57,9 +61,9 @@ def wait_until_next_minute():
     now = datetime.now()
     next_minute = (now.replace(second=0, microsecond=0) + timedelta(minutes=1))
     sleep_time = (next_minute - now).total_seconds()
-    # We assume a small delay of 3 seconds
-    delay = 3
-    time.sleep(sleep_time + delay)
+    # We assume a small delay of 8 seconds
+    delay = 8
+    timemodule.sleep(sleep_time + delay)
 
 """
 It can happen that we have data loss, i.e. one minute can be skipped and then we land directly at the next 
@@ -78,8 +82,8 @@ def convert_df(df):
     df['volume'] = df['volume'].str.strip('[]').astype('float64')
     return df
 
-i = 3
-j = 3
+i = 1
+j = 1
 
 def is_market_open():
 
@@ -96,9 +100,13 @@ def is_market_open():
 
 while True:
     if is_market_open():
-        df_stream = pd.read_csv(
-            '/Users/doblerloic/Desktop/Finance_prediction_project/predictive_finance/Brokers/Alpaca/Data/live_data.csv'
-        ) 
+        # When there is data loss there is no csv file -> No there is a path, but I still need to handle the data
+        # loss and I need to do this with the icrement i
+        if not os.path.exists(file_path):
+            print("Data loss")
+        else:
+            df_stream = pd.read_csv(file_path) 
+            print(df_stream)
         if len(df_stream) == i: 
             df_stream = convert_df(df_stream)
             dataF = pd.concat([df, df_stream], axis=0, ignore_index=True)
@@ -114,17 +122,23 @@ while True:
             if res:
                 j = 1
 
+            print(i, j, res, df_stream['timestamp'].iloc[-1])
+            print(datetime.now(timezone.utc) - df_stream['timestamp'].iloc[-1])
+
             i+=1
             j+=1
             # Only do skip to next minute if it is not already passed
-            if datetime.now(timezone.utc) - df_stream['timestamp'].iloc[-1] < timedelta(seconds=60):
+            if datetime.now(timezone.utc) - df_stream['timestamp'].iloc[-1] < timedelta(seconds=120):
+                print("wait untile next min")
                 wait_until_next_minute()
             else:
                 continue
         
-        # Handle first minute and times where we have data loss
+        """# Handle first minute and times where we have data loss
         else:
-            time.sleep(30)
+            continue
+            #timemodule.sleep(30)
+            #print("sleep")"""
     else:
         print("Market is closed.")
         break  
