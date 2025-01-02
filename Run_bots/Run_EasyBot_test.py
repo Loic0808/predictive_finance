@@ -1,9 +1,10 @@
 from Brokers.Alpaca.Alpaca_keyes import API_KEY, SECRET_KEY
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 
 import pandas as pd
 import time
+import pytz
 
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from alpaca.data.historical.stock import StockHistoricalDataClient
@@ -54,35 +55,65 @@ trading_bot = EasyBot(symbol, trade_client)
 ############################
 
 def wait_until_next_minute():
-    # Get the current time
     now = datetime.now()
-    # Calculate the time for the next minute
     next_minute = (now.replace(second=0, microsecond=0) + timedelta(minutes=1))
-    # Calculate the time to sleep until the next minute
     sleep_time = (next_minute - now).total_seconds()
-    time.sleep(sleep_time)
+    # We assume a small delay of 3 seconds
+    delay = 3
+    time.sleep(sleep_time + delay)
 
-# We assume that the bot and the live_data scripts are started at close times
-i = 0
+"""
+It can happen that we have data loss, i.e. one minute can be skipped and then we land directly at the next 
+minute.
+"""
 
+def parse_datetime(dt_str):
+    return datetime.strptime(dt_str, "[datetime.datetime(%Y, %m, %d, %H, %M, tzinfo=datetime.timezone.utc)]")
+
+def convert_df(df):
+    df['timestamp'] = df['timestamp'].apply(parse_datetime).dt.tz_localize(pytz.utc)
+    df['open'] = df['open'].str.strip('[]').astype('float64')
+    df['high'] = df['high'].str.strip('[]').astype('float64')
+    df['low'] = df['low'].str.strip('[]').astype('float64')
+    df['close'] = df['close'].str.strip('[]').astype('float64')
+    df['volume'] = df['volume'].str.strip('[]').astype('float64')
+    return df
+
+i = 3
+j = 3
+
+# while time between trading hours:
 while True:
     df_stream = pd.read_csv(
         '/Users/doblerloic/Desktop/Finance_prediction_project/predictive_finance/Brokers/Alpaca/Data/live_data.csv'
         ) 
-    new_time = df_stream['timestamp'].iloc[-1]
-    if len(df_stream) == i+1: 
-        old_time = df_stream['timestamp'].iloc[-1]
 
+    if len(df_stream) == i: 
+        df_stream = convert_df(df_stream)
         dataF = pd.concat([df, df_stream], axis=0, ignore_index=True)
-        print(dataF)
-        if new_time != old_time or i == 0:
-            i+=1
-        wait_until_next_minute()
-    # Not sure if this implementation is the correct one
 
-    # it can happen that we have data loss, i.e. one minute can be skipped and then we land directly at the next 
-    # minute. This is a problem because then the logic of the length above does not work anymore.
-    # I need to implement the following: icrement i only if the new time is not the same as the old time
+        dataF = EMA(dataF).EMA_50(50)
+        dataF = ATR(dataF).calculate_chandelier_exit()
+
+        data_of_interest = dataF[-j:]
+
+        res = trading_bot.run_strat(data_of_interest)
+
+        # If we buy or there is an invalid trade, we reinitialize the data
+        if res:
+            j = 1
+
+        i+=1
+        j+=1
+        # Only do skip to next minute if it is not already passed
+        if datetime.now(timezone.utc) - df_stream['timestamp'].iloc[-1] < timedelta(seconds=60):
+            wait_until_next_minute()
+        else:
+            continue
+    
+    # Handle first minute and times where we have data loss
+    else:
+        time.sleep(30)
 
 
 """dataF = EMA(dataF).EMA_50(50)
@@ -101,9 +132,6 @@ while True:
         read_and_process_csv(file_path)
         time.sleep(interval)"""
 
-# 2 things to do: I need to reinitialize the stream data if buy or invalid AND I need to make the bot run 
-# async or at least continuously
-# Need to run the files simultaneously
 
 
 

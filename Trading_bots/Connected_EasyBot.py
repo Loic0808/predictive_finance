@@ -2,8 +2,10 @@ from alpaca.trading.requests import (
     MarketOrderRequest,
     StopLossRequest,
     TakeProfitRequest,
+    GetOrdersRequest,
+    ClosePositionRequest
 )
-from alpaca.trading.enums import OrderClass, OrderSide, TimeInForce
+from alpaca.trading.enums import OrderClass, OrderSide, TimeInForce, QueryOrderStatus
 
 import numpy as np
 
@@ -30,8 +32,8 @@ class EasyBot:
         self.step_2 = True
         self.step_3 = True
 
-        self.high_point = None
-        self.len_high_point_candle = None
+        self.high_point = np.inf
+        self.len_high_point_candle = 0
 
     def __price_below_EMA(self, df) -> bool:
         """Is True if price is below 50 day EMA"""
@@ -165,8 +167,8 @@ class EasyBot:
         self.step_2 = True
         self.step_3 = True
 
-        self.high_point = None
-        self.len_high_point_candle = None
+        self.high_point = np.inf
+        self.len_high_point_candle = 0
 
     def run_strat(self, available_df):
 
@@ -181,6 +183,88 @@ class EasyBot:
                 return 1
             
         return 0
+    
+    def __log_info():
+        """
+        Print information for user so that he can choose what he wants to print. Inform him about 
+        the different print options
+        """
+        pass
+    
+    def get_requests(
+            self, 
+            status: str,
+            print_list: bool = True, 
+            attributes: list[str] = ["type", "submitted_at"]
+            ):
+        
+        self.__log_info()
+
+        if status.lower() == "all":
+            req = GetOrdersRequest(
+                status = QueryOrderStatus.ALL,
+                symbols = [self.symbol]
+            )
+        elif status.lower() == "open":
+            req = GetOrdersRequest(
+                status = QueryOrderStatus.OPEN,
+                symbols = [self.symbol]
+            )
+        else:
+            req = GetOrdersRequest(
+                status = QueryOrderStatus.CLOSED,
+                symbols = [self.symbol]
+            )
+        orders = self.trading_client.get_orders(req)
+
+        if print_list:
+            for order in orders:
+                for attribute in attributes:
+                    value = getattr(order, attribute)
+                    print(f"{attribute}: {value}")
+
+        return orders
+    
+    def cancel_orders(self):
+        self.trading_client.cancel_orders()
+
+    def get_open_positions(
+            self, 
+            symbol_or_asset_id: list[str],
+            print_list: bool, 
+            attributes: list[str]
+            ):
+        
+        positions = self.trading_client.get_open_position(symbol_or_asset_id)
+
+        if print_list:
+            for position in positions:
+                for attribute in attributes:
+                    value = getattr(position, attribute)
+                    print(f"{attribute}: {value}")
+
+    def close_position(self, symbol: str, quantity: str):
+        assert symbol in self.symbol
+
+        self.trading_client.close_position(
+            symbol_or_asset_id = symbol,
+            close_options = ClosePositionRequest(
+                qty = quantity,
+            )
+        )
+
+    def get_account_info(
+            self,
+            print_list: bool, 
+            attributes: list[str]
+            ):
+        
+        account = self.trading_client.get_account()
+
+        if print_list:
+            for attribute in attributes:
+                value = getattr(account, attribute)
+                print(f"{attribute}: {value}")
 
 
 """
