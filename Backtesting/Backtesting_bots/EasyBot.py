@@ -22,6 +22,13 @@ class EasyBot():
         self.bank_account = bank_account
         self.columns = df.columns
 
+        self.step_1 = True
+        self.step_2 = True
+        self.step_3 = True
+
+        self.high_point = np.inf
+        self.len_high_point_candle = 0
+
     def __price_below_EMA(self, df) -> bool:
         """ Is True if price is below 50 day EMA  """
 
