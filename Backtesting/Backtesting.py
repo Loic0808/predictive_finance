@@ -60,10 +60,13 @@ class Backtesting():
         df = df.reset_index()
         self.df = df.drop(['symbol', 'trade_count', 'vwap'], axis=1)
 
+        return self.df
+
     def run_bot(self, trading_bot):
         self.trading_bot = trading_bot
         self.trading_bot.run_strat(self.df)
         self.backtest_df = self.trading_bot.backtesting
+        return self.backtest_df
         
     def test_in_sample(self):
         pass
