@@ -23,14 +23,12 @@ class Backtesting():
 
     def __init__(
             self,
-            trading_bot, # no abstract class yet
             # historical_data_client, not needed for now
         ):
-
         """
         historical_data_client: Data client to retrieve stocks, options or crypto
         """
-        self.trading_bot = trading_bot
+        pass
 
     def create_dataframe(
             self, 
@@ -39,8 +37,7 @@ class Backtesting():
             start_date: datetime,
             end_date: datetime,
             interval: datetime, 
-            asset_list: list[str],
-            in_sample: bool
+            asset_list: list[str]
         ):
         """
         start_date: Date on which we start testing the strategy
@@ -48,7 +45,6 @@ class Backtesting():
         interval: Interval of the incomming data (e.g., 1 min, 15 min, 4 hours, ...)
         asset_list: List of assets on which we test the strategy
         trading_bot: Trading strategy
-        in_sample: Is this data for testing in sample or out of sample
         """
 
         historical_data_client = StockHistoricalDataClient(api_key, secret_key)
@@ -64,9 +60,11 @@ class Backtesting():
         df = df.reset_index()
         self.df = df.drop(['symbol', 'trade_count', 'vwap'], axis=1)
 
-    def run_bot(self):
-        pass
-
+    def run_bot(self, trading_bot):
+        self.trading_bot = trading_bot
+        self.trading_bot.run_strat(self.df)
+        self.backtest_df = self.trading_bot.backtesting
+        
     def test_in_sample(self):
         pass
 
@@ -76,23 +74,8 @@ class Backtesting():
 
 
     def win_rate(self):
-
-        
-
-
-
-
-
-
-
-
-        # For each buy/sell signal we record the entry price, stop-loss, take-profit levels, and any other relevant details and store it
-        # The dictionnary is in the following format: {datetime, [entry_price, stop_loss, take_profit,...], ...}
-        self.buys = {}
-        self.sells = {}
-
-        self.profit = {}
-        self.losses = {}
+        # if first - last column is pos it's a win, else it's a loss.
+        pass
 
 
     """

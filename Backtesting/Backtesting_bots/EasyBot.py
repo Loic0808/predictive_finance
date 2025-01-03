@@ -1,14 +1,6 @@
 import pandas as pd
 import numpy as np
 
-class ColumnNamesYF:
-    HIGH = "High"
-    LOW = "Low"
-    OPEN = "Open"
-    CLOSE = "Close"
-    ADJ_CLOSE = "Adj Close"
-    EMA_50 = "EMA_50"
-
 class ColumnNames:
     HIGH = "high"
     LOW = "low"
@@ -22,12 +14,7 @@ class EasyBot():
         self.bank_account = bank_account
         self.columns = df.columns
 
-        self.step_1 = True
-        self.step_2 = True
-        self.step_3 = True
-
-        self.high_point = np.inf
-        self.len_high_point_candle = 0
+        self.backtesting = pd.DataFrame()
 
     def __price_below_EMA(self, df) -> bool:
         """ Is True if price is below 50 day EMA  """
@@ -88,7 +75,7 @@ class EasyBot():
         """If the breakcoutcandle is 3 or 4 times bigger than the mean hight of candles before, then the trade is invalid"""
 
         df['AbsDiff'] = (df[ColumnNames.CLOSE] - df[ColumnNames.OPEN]).abs()
-        mean_abs_diff = df['AbsDiff'].iloc[:50].mean()
+        mean_abs_diff = df['AbsDiff'].iloc[-10:].mean() # :50
 
         if self.len_high_point_candle >= 3*mean_abs_diff:
             return True
@@ -101,13 +88,14 @@ class EasyBot():
         self.stop_loss = df['Chandelier_Exit_Short'].iloc[-1]
 
         if self.close_buy >= self.high_point:
-            return True, self.close_buy, self.stop_loss
-        
-        return False, 0, 0
+            self.buy_info = [self.close_buy, self.stop_loss]
+            return True
+        return False
 
     def __stop_loss_f(self, df):
         """ When to sell stock to limit the loss """
         if df[ColumnNames.CLOSE].iloc[-1] < self.stop_loss:
+            self.buy_info.append(df[ColumnNames.CLOSE].iloc[-1])
             return True
         return False
 
@@ -115,8 +103,15 @@ class EasyBot():
         """Take profit function"""
         range = np.abs(self.close_buy - self.stop_loss)
         if df[ColumnNames.HIGH].iloc[-1] >= self.close_buy + 2*range:
+            self.buy_info.append(df[ColumnNames.CLOSE].iloc[-1])
             return True
         return False
+    
+    def __backtesting(self):
+        new_data = pd.DataFrame(self.buy_info, columns=['Close_price_buy', 'Stop_loss', 'Close_price_sell'])
+
+        # Step 4: Append the new data to the empty DataFrame
+        self.backtesting = pd.concat([self.backtesting, new_data], ignore_index=True)
 
     def __steps(self, df):
 
@@ -133,40 +128,39 @@ class EasyBot():
             self.step_3 = False
             self.high_point, self.len_high_point_candle = self.__get_swing_high_point_before_pullback(df)
 
-        if not self.is_buy and not self.step_3 and self.__invalid_trade_1(df): 
+        if not self.step_3 and self.__invalid_trade_1(df): 
             print("Invalid trade1")
             # Start over
             return "invalid1"
             
-        if not self.is_buy and not self.step_3 and self.__invalid_trade_2(df):
+        if not self.step_3 and self.__invalid_trade_2(df):
             print("Invalid trade2")
             # Start over
             return "invalid2"
 
-        if not self.is_buy and not self.step_3:
-            self.is_buy, self.close_buy, self.stop_loss = self.__buy(df)
-            if self.is_buy:
-                return "buy"
+        if not self.step_3 and self.__buy(df):
+            self.buy_bool = True
+            return "buy"
             
         return "hold"
     
-    def __trading_strategy(self, df):
+    def __trading_strategy(self, df, qty):
 
         if self.buy_bool:
             print("BUY")
-            self.bank_account -= 100*df[ColumnNames.OPEN].iloc[-1]
+            self.bank_account -= qty*df[ColumnNames.OPEN].iloc[-1]
             self.buy_bool = False
             return 0
         
         # Implement the stop loss functions here
         if self.__stop_loss_f(df):
             print("sell and loose small amount")
-            self.bank_account += 100*df[ColumnNames.OPEN].iloc[-1]
+            self.bank_account += qty*df[ColumnNames.OPEN].iloc[-1]
             return "sell1"
 
         if self.__take_profit_target(df):
             print("sell and make profit")
-            self.bank_account += 100*df[ColumnNames.OPEN].iloc[-1]
+            self.bank_account += qty*df[ColumnNames.OPEN].iloc[-1]
             return "sell2"
         
         else:
@@ -179,15 +173,14 @@ class EasyBot():
         self.step_3 = True
 
         self.strat = False
-        self.buy_bool = True
+        self.buy_bool = False
 
-        self.high_point = None
-        self.len_high_point_candle = None
-        self.close_buy = None
-        self.stop_loss = None 
+        self.high_point = np.inf
+        self.len_high_point_candle = 0
 
         self.is_buy = False
         self.available_df = pd.DataFrame(self.columns)
+        self.buy_info = []
 
     def run_strat(self, df):
         self.__reinitialize_variables()
@@ -202,12 +195,14 @@ class EasyBot():
                     self.__reinitialize_variables()
                 elif not self.strat and res == "buy":
                     self.strat = True
+                    # We buy the asset and then go to the next candle and wait until we get a sell signal
+                    res = self.__trading_strategy(self.available_df, 100)
                     continue # Go directly to next candle
 
                 if self.strat:         
-                    res = self.__trading_strategy(self.available_df)
+                    res = self.__trading_strategy(self.available_df, 100)
                     if res == "sell1" or res == "sell2":
-
+                        self.__backtesting()
                         self.__reinitialize_variables()
                         self.strat = False
                     else:
