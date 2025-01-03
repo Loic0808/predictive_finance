@@ -61,8 +61,8 @@ def wait_until_next_minute():
     now = datetime.now()
     next_minute = (now.replace(second=0, microsecond=0) + timedelta(minutes=1))
     sleep_time = (next_minute - now).total_seconds()
-    # We assume a small delay of 8 seconds
-    delay = 8
+    # We assume a small delay of 2 seconds
+    delay = 2
     timemodule.sleep(sleep_time + delay)
 
 """
@@ -100,14 +100,16 @@ def is_market_open():
 
 while True:
     if is_market_open():
-        # When there is data loss there is no csv file -> No there is a path, but I still need to handle the data
-        # loss and I need to do this with the icrement i
         if not os.path.exists(file_path):
             print("Data loss")
         else:
             df_stream = pd.read_csv(file_path) 
             print(df_stream)
-        if len(df_stream) == i: 
+
+        if len(df_stream) == i-1:
+            wait_until_next_minute()
+        
+        elif len(df_stream) == i: 
             df_stream = convert_df(df_stream)
             dataF = pd.concat([df, df_stream], axis=0, ignore_index=True)
 
