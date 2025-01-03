@@ -125,7 +125,6 @@ while True:
                 j = 1
 
             print(i, j, res, df_stream['timestamp'].iloc[-1])
-            print(datetime.now(timezone.utc) - df_stream['timestamp'].iloc[-1])
 
             i+=1
             j+=1
