@@ -9,8 +9,10 @@ from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 
 
 # Format is (YYYY, MM, DD)
-start_date = datetime(2024, 1, 1) 
-end_date = datetime(2024, 1, 5)
+start_date = datetime(2024, 6, 1) 
+end_date = datetime(2024, 6, 6)
+
+trade_type = "long"
 
 backtesting = Backtesting()
 
@@ -23,17 +25,25 @@ data_df = backtesting.create_dataframe(
     asset_list="TSLA"
     )
 
-data_df = EMA(data_df).EMA_50(50)
-data_df = ATR(data_df).calculate_chandelier_exit()
+if data_df.empty:
+    print("Empty dataframe")
 
-bank_account = 10000
+else:
+    data_df = EMA(data_df).EMA_50(50)
+    data_df = ATR(data_df).calculate_chandelier_exit()
 
-easy_bot = EasyBot(bank_account, data_df)
+    bank_account = 10000
+    stock_quantity = 10
 
-backtesting_df = backtesting.run_bot(easy_bot)
+    easy_bot = EasyBot(bank_account, stock_quantity, data_df)
 
-# The error is that the bot runs the second part of the strategy only at the end.
-# I enter in the buy signal multiple times, I need to reinitialize (a part) of the data
-# or I need to add a bool variable so that I don't enter the buy signal.
+    backtesting_df, log_info_list = backtesting.run_bot(easy_bot, data_df)
+
+    backtesting_df = backtesting.calculate_profit_and_loss(backtesting_df, trade_type)
+    backtesting_df = backtesting.calculate_MAE_MFE(backtesting_df, trade_type)
+    backtesting_df = backtesting.calculate_risk_to_reward(backtesting_df, trade_type)
+    backtesting_df = backtesting.monetary_gains(backtesting_df, trade_type)
 
 print(backtesting_df)
+#print(log_info_list)
+
