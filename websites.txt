@@ -1,3 +1,6 @@
+Important libraries
+https://github.com/wilsonfreitas/awesome-quant
+
 Trading bot with DRL
 https://medium.com/datapebbles/building-a-trading-bot-with-deep-reinforcement-learning-drl-b9519a8ba2ac
 https://medium.com/@zhonghong9998/using-reinforcement-learning-to-optimize-stock-trading-strategies-a77d35ea3308
