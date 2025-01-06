@@ -162,6 +162,12 @@ class Backtesting:
             ) * df[BacktestColumnNames.STOCKS_TRADED]
 
         return df
+    
+    def net_profit(self, df):
+        gains = df[df[BacktestColumnNames.MONETARY_GAIN] >= 0][BacktestColumnNames.MONETARY_GAIN].sum()
+        losses = df[df[BacktestColumnNames.MONETARY_GAIN] < 0][BacktestColumnNames.MONETARY_GAIN].sum()
+
+        return gains, losses, gains - losses
 
     def win_rate(self, df):
         """
@@ -178,6 +184,41 @@ class Backtesting:
         all_trades = len(df)
 
         return wins / all_trades
+    
+    def profit_factor(self, df):
+        """
+        Profit factor is the ratio of the total profits to total losses over a specific period or set of trades. A profit factor greater than 1 indicates that the strategy is profitable overall.
+        This ratio provides insight into the overall efficiency of a trading strategy by comparing how much profit is made for every dollar lost. It’s a simple way to measure profitability.
+        A profit factor of 2 means the strategy makes $2 in profit for every $1 lost.
+        """
+        gains = df[df[BacktestColumnNames.MONETARY_GAIN] >= 0][BacktestColumnNames.MONETARY_GAIN].sum()
+        losses = df[df[BacktestColumnNames.MONETARY_GAIN] < 0][BacktestColumnNames.MONETARY_GAIN].sum()
+
+        return gains/losses
+
+    def average_win_over_loss(self, df):
+        """
+        The average win/loss is the average size of winning trades compared to the average size of losing trades.
+        This metric helps traders understand the potential magnitude of wins compared to losses. A strategy with a high average win/loss ratio can remain profitable even if the win rate is relatively low.
+        For instance, an average win/loss ratio of 3 means that, on average, winning trades are three times larger than losing trades.
+        """
+        average_gains = df[df[BacktestColumnNames.MONETARY_GAIN] >= 0][BacktestColumnNames.MONETARY_GAIN].mean()
+        average_losses = abs(df[df[BacktestColumnNames.MONETARY_GAIN] < 0][BacktestColumnNames.MONETARY_GAIN].mean())
+
+        return average_gains/average_losses
+
+    def shrap_ration(self, df):
+        """
+        The Sharpe ratio is a risk-adjusted measure of return, showing how much excess return is received for the additional volatility (risk) taken by the trader. It is one of the most commonly used metrics in finance to compare different strategies.
+        The Sharpe ratio allows traders to evaluate whether a strategy’s returns are due to smart trading or simply taking on too much risk. A higher Sharpe ratio indicates better risk-adjusted returns.
+        A ratio above 1 is generally considered good, while above 2 is excellent.
+
+        The Sharpe ratio is a key metric that measures the risk-adjusted return of a trading strategy. 
+        It tells how much excess return one is receiving for the additional risk they're taking on compared to a risk-free asset (such as government bonds).
+        """
+        pass
+
+
 
     def risk_reward_ratio(self, df):
         """
@@ -223,6 +264,7 @@ class Backtesting:
         win_rate = self.win_rate(df)
         self.risk_reward_ratio(df)
 
+        # We have a minus since we take the absolute value of the average loss
         return win_rate * self.average_profit - ((1 - win_rate) * self.average_loss)
 
     def maximal_drawdown(self, df):

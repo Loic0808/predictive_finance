@@ -10,7 +10,7 @@ from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 
 # Format is (YYYY, MM, DD)
 start_date = datetime(2024, 1, 1) 
-end_date = datetime(2024, 6, 1)
+end_date = datetime(2024, 1, 5)
 
 trade_type = "long"
 
@@ -47,7 +47,10 @@ backtesting_df = backtesting.monetary_gains(backtesting_df, trade_type)
 #print(backtesting_df)
 #print(log_info_list)
 
+print("Gains, losses and net profit", backtesting.net_profit(backtesting_df))
 print("Winning rate", backtesting.win_rate(backtesting_df))
+print("Profit factor", backtesting.profit_factor(backtesting_df))
+print("Average win/loss", backtesting.average_win_over_loss(backtesting_df))
 print("Risk reward ration", backtesting.risk_reward_ratio(backtesting_df))
 print("Profitability", backtesting.profitability(backtesting_df))
 print("Consistency", backtesting.consistency(backtesting_df))
