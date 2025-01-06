@@ -1,5 +1,9 @@
 Trading bot with DRL
 https://medium.com/datapebbles/building-a-trading-bot-with-deep-reinforcement-learning-drl-b9519a8ba2ac
+https://medium.com/@zhonghong9998/using-reinforcement-learning-to-optimize-stock-trading-strategies-a77d35ea3308
+
+Sentiment analysis with machine learning
+https://medium.com/@zhonghong9998/quantitative-finance-predicting-stock-prices-with-python-and-deep-learning-06a9538377c9
 
 Library with methods for quants
 https://github.com/ranaroussi/quantstats
@@ -14,3 +18,114 @@ For broker websites try:
 -Webull
 -Robinhood
 -Saxo Bank or XTB
+
+
+### **Effective Trading Strategies with Machine Learning and Complex Mathematics**
+
+#### 1. **Statistical Arbitrage (StatArb)**
+   - **Description**: Uses statistical methods to identify mispriced assets and exploit mean-reverting behaviors. Machine learning models can enhance StatArb by identifying more complex relationships and patterns in asset prices.
+   - **Methods Used**: 
+     - Linear regression, PCA (Principal Component Analysis)
+     - Time series analysis
+     - Reinforcement learning for dynamic portfolio rebalancing
+   - **Example**: Pair trading, where two historically correlated stocks deviate and are expected to revert.
+
+#### 2. **Market Making and High-Frequency Trading (HFT)**
+   - **Description**: Algorithms provide liquidity by placing buy and sell orders simultaneously, profiting from the bid-ask spread.
+   - **Methods Used**:
+     - Predictive models for order flow (e.g., LSTMs for time series)
+     - Queue modeling using stochastic processes
+     - Reinforcement learning for order execution
+   - **Complex Mathematics**: Queue theory, stochastic calculus, and optimization techniques.
+
+#### 3. **Sentiment Analysis for Trading**
+   - **Description**: Uses natural language processing (NLP) to analyze news, social media, and other text data to predict market sentiment and movements.
+   - **Methods Used**:
+     - NLP techniques (e.g., transformers like BERT)
+     - Sentiment scoring and topic modeling
+   - **Applications**: Detecting market-moving events or predicting stock price movements based on sentiment shifts.
+
+#### 4. **Deep Learning for Price Prediction**
+   - **Description**: Uses neural networks to model complex, non-linear relationships in financial data.
+   - **Methods Used**:
+     - Convolutional Neural Networks (CNNs) for feature extraction from price data
+     - Long Short-Term Memory (LSTM) networks for sequential data
+     - Autoencoders for anomaly detection in pricing data
+   - **Applications**: Predicting short-term price movements or volatility.
+
+#### 5. **Reinforcement Learning for Optimal Execution**
+   - **Description**: Models the problem of executing large trades without significantly impacting the market.
+   - **Methods Used**:
+     - Q-learning, deep Q-networks (DQN)
+     - Proximal Policy Optimization (PPO)
+   - **Applications**: Minimizing market impact during execution of large trades.
+
+#### 6. **Portfolio Optimization**
+   - **Description**: Uses optimization techniques to allocate assets in a portfolio to maximize returns while minimizing risk.
+   - **Methods Used**:
+     - Modern Portfolio Theory (MPT) with machine learning enhancements
+     - Bayesian optimization for dynamic risk management
+     - Monte Carlo simulations
+   - **Applications**: Dynamic rebalancing and personalized portfolio management.
+
+#### 7. **Quantitative Momentum and Factor Models**
+   - **Description**: Machine learning is used to discover hidden factors or refine traditional ones (e.g., momentum, value).
+   - **Methods Used**:
+     - Gradient boosting (e.g., XGBoost, LightGBM)
+     - Feature selection and engineering using machine learning
+   - **Applications**: Identifying outperforming stocks or ETFs.
+
+---
+
+### **Where to Learn More**
+
+#### **Books**
+1. **"Advances in Financial Machine Learning" by Marcos López de Prado**  
+   - A must-read for understanding how machine learning can be applied to finance, focusing on reproducible and robust techniques.
+   
+2. **"Algorithmic Trading and DMA" by Barry Johnson**  
+   - Covers algorithmic trading strategies, execution, and the mathematics behind them.
+
+3. **"Quantitative Trading" by Ernest Chan**  
+   - A beginner-friendly book for implementing quantitative trading strategies.
+
+4. **"Machine Learning for Asset Managers" by Marcos López de Prado**  
+   - Focuses on practical applications of machine learning in asset management.
+
+#### **Online Courses**
+1. **Coursera: Machine Learning for Trading**  
+   - Offered by the Georgia Institute of Technology, this course provides an introduction to trading strategies using ML.
+
+2. **EDX: Computational Investing**  
+   - Focuses on quantitative investing and basic machine learning techniques.
+
+3. **QuantInsti's EPAT Program**  
+   - A professional program tailored for algorithmic trading and quantitative finance.
+
+#### **Research Papers and Journals**
+1. **SSRN (Social Science Research Network)**  
+   - A repository of academic papers on finance and trading.
+   
+2. **The Journal of Financial Data Science**  
+   - Focuses on the intersection of finance and machine learning.
+
+#### **Communities and Blogs**
+1. **QuantConnect**  
+   - An open-source platform for developing and testing quantitative strategies.
+   
+2. **Kaggle Competitions**  
+   - Many competitions focus on financial modeling and prediction.
+
+3. **Reddit: r/quantfinance**  
+   - A community discussing quant strategies and career advice.
+
+#### **GitHub Repositories**
+1. **Awesome Quant**: A curated list of quantitative finance resources.  
+   - [GitHub Link](https://github.com/wilsonfreitas/awesome-quant)
+
+2. **QuantLib**: A library for quantitative finance.  
+   - [GitHub Link](https://github.com/lballabio/QuantLib)
+
+---
+
+These resources can help you dive deep into advanced trading strategies, leveraging machine learning and mathematics effectively. Let me know if you'd like further details on any specific strategy or resource!
