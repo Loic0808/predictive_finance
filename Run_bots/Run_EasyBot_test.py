@@ -20,7 +20,7 @@ from Trading_bots.Connected_EasyBot import EasyBot
 api_key = API_KEY
 secret_key = SECRET_KEY
 
-file_path = '/Users/doblerloic/Desktop/Finance_prediction_project/predictive_finance/Brokers/Alpaca/Data/live_data.csv'
+#file_path = '/Users/doblerloic/Desktop/Finance_prediction_project/predictive_finance/Brokers/Alpaca/Data/live_data.csv'
 
 symbol = "TSLA"
 
@@ -100,6 +100,10 @@ def is_market_open():
 
 while True:
     if is_market_open():
+        ###
+        file_path = f'/Users/doblerloic/Desktop/Finance_prediction_project/predictive_finance/Brokers/Alpaca/Data/live_data_{i}.csv'
+        ###
+
         if not os.path.exists(file_path):
             print("Data loss")
         else:
@@ -107,6 +111,7 @@ while True:
             print(df_stream)
 
         if len(df_stream) == i-1:
+            print("wait1")
             wait_until_next_minute()
         
         elif len(df_stream) == i: 

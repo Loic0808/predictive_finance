@@ -24,7 +24,7 @@ data_stream_list = []
 
 async def stock_data_stream_handler(bar):
     global data_stream_list
-    # Testing 
+    ### Testing 
     global i
     data = {
         'timestamp': [bar.timestamp],
@@ -36,9 +36,11 @@ async def stock_data_stream_handler(bar):
     }
     data_stream_list.append(data)
     df = pd.DataFrame(data_stream_list)
-
+    ###
     file_name = f"Data/live_data_{i}.csv"
-    df.to_csv(file_name, index=False)  
+    df.to_csv(file_name, index=False) 
+    ### 
+    i+=1
 
 
 symbols = [symbol]
