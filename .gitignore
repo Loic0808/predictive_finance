@@ -1,1 +1,3 @@
-Broekers/Alpaca/Data/live_data.csv
+Brokers/Alpaca/Data/live_data.csv
+__pycache__/
+*.pyc
