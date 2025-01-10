@@ -13,7 +13,6 @@ def delete_csv_if_exists(file_path):
 file_name = 'Data/live_data.csv'
 delete_csv_if_exists(file_name)
 
-
 api_key = API_KEY
 secret_key = SECRET_KEY
 
@@ -34,7 +33,9 @@ async def stock_data_stream_handler(bar):
     }
     data_stream_list.append(data)
     df = pd.DataFrame(data_stream_list)
-    df.to_csv(file_name, index=False)  
+
+    if not df.empty:
+        df.to_csv(file_name, index=False) 
 
 
 symbols = [symbol]
