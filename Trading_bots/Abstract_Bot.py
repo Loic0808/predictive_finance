@@ -9,39 +9,39 @@ from abc import ABC, abstractmethod
 
 class AbstractBot(ABC):
 
-    @abstractmethod
+    #@abstractmethod
     def __init__(self):
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def run_strat(self):
         pass
     
-    @abstractmethod
+    #@abstractmethod
     def __get_entry_price(self):
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def __get_stop_loss(self):
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def __get_take_profit(self):
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def __get_exit_price(self):
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def __get_exit_pattern(self):
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def __MAE_and_MFE(self):
         # See code in EasyBot
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def backtesting(self):
         pass

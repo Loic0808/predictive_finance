@@ -35,12 +35,17 @@ data_df = ATR(data_df).calculate_chandelier_exit()
 
 bank_account = 10000
 model = PPO
-commission_fee = 
-slippage_cost =
+commission_fee = 0.01
+slippage_cost = 0.1
 
-easy_bot = DRLBotV1(model, bank_account, ,)
+DRL_bot = DRLBotV1(model, bank_account, commission_fee, slippage_cost)
 
-backtesting_df, log_info_list = backtesting.run_bot(easy_bot, data_df)
+# Train DRL bot. If already trained, no need to access again
+# I will need to do a specific file for training
+DRL_bot.train_model(data_df[:100])
+
+backtesting.run_bot(DRL_bot, data_df[100:])
+#backtesting_df, log_info_list = backtesting.run_bot(easy_bot, data_df)
 
 
 
@@ -49,7 +54,7 @@ backtesting_df, log_info_list = backtesting.run_bot(easy_bot, data_df)
 
 
 
-from Backtesting.Backtesting_bots.DRL_bot_v1 import StockTradingEnv
+"""from Backtesting.Backtesting_bots.DRL_bot_v1 import StockTradingEnv
 from Connect_to_brokers.YFinance_class import YFinanceGetData
 
 from stable_baselines3 import PPO
@@ -81,4 +86,4 @@ for i in range(len(df_test['adj_close'])):
     action, _state = model.predict(obs)
     obs, reward, done, info = vec_env.step(action)
     
-env_test.render_all()
+env_test.render_all()"""

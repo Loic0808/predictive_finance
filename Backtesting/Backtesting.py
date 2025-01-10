@@ -104,14 +104,15 @@ class Backtesting:
         if True: #else:
             self.trading_bot = trading_bot
             self.trading_bot.run_strat(df)
-            self.backtest_df = self.trading_bot.backtesting
-            self.log_info_list = self.trading_bot.log_info
+            # Does not exist yet for DRL bot
+            #self.backtest_df = self.trading_bot.backtesting # uncomment
+            #self.log_info_list = self.trading_bot.log_info # uncomment
 
             #self.backtest_df.to_csv(file_path, index=False)
             #with open(list_path, 'wb') as file:
             #    pickle.dump(self.log_info_list, file)
 
-        return self.backtest_df, self.log_info_list
+        #return self.backtest_df, self.log_info_list # uncomment
 
     def calculate_profit_and_loss(self, df, trade_type: str):
         if trade_type == "long":
