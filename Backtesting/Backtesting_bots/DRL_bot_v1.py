@@ -6,48 +6,47 @@ import pandas as pd
 import matplotlib.pyplot as plt 
 
 from Trading_bots.Abstract_Bot import AbstractBot
+from Backtesting.Backtesting import BacktestColumnNames
+from Brokers.Alpaca.Column_names import ColumnNames
 
 
 class DRLBotV1(AbstractBot):
 
     def __init__(
             self,
-            trading_environment,
             model,
             bank_account, 
             commission_fee,
             slippage_cost
             ):
-        self.trading_environment = trading_environment
         self.model = model
         self.bank_account = bank_account
         self.commission_fee = commission_fee
         self.slippage_cost = slippage_cost
 
+        # Path to save the models
         self.path = "/Users/doblerloic/Desktop/Finance_prediction_project/predictive_finance/DRL_backtest_models"
 
     def train_model(self, df_train):
-        env_train = self.trading_environment(df_train, self.bank_account, self.commission_fee, self.slippage_cost)
+        # Initialize the environment for the bot
+        env_train = StockTradingEnv(df_train, self.bank_account, self.commission_fee, self.slippage_cost)
+        # Initialize, train and save the model
         self.trained_model = self.model("MlpPolicy", env_train, verbose=0)
         self.trained_model.learn(total_timesteps=100_000, progress_bar=True)
-
         self.trained_model.save(self.path)
 
     def run_strat(self, df):
-        env_test = StockTradingEnv(df, self.initial_balance, self.commission_fee, self.slippage_cost)
-
-        self.run_model = self.trained_model.load("Run_bots/Runs/ppo_msft_v1_run1", env=env_test)
+        # Initialize the testing environment and load the model
+        env_test = StockTradingEnv(df, self.bank_account, self.commission_fee, self.slippage_cost)
+        self.run_model = self.trained_model.load(self.path, env=env_test)
 
         vec_env = self.run_model.get_env()
         obs = vec_env.reset()
-        for i in range(len(df['adj_close'])):
+        for i in range(len(df[ColumnNames.CLOSE])):
             action, _state = self.run_model.predict(obs)
             obs, reward, done, info = vec_env.step(action)
             
         env_test.render_all()
-        
-        
-        
 
 
 class StockTradingEnv(gym.Env):
@@ -58,8 +57,8 @@ class StockTradingEnv(gym.Env):
         self.initial_balance = initial_balance
         self.balance = self.initial_balance
         self.stock_owned = 0
-        self.date = data['date']
-        self.stock_price_history = data['adj_close']
+        self.date = data[ColumnNames.TIMESTAMP]
+        self.stock_price_history = data[ColumnNames.CLOSE]
         self.commission_fee = commission_fee
         self.slippage_cost = slippage_cost
         
@@ -107,7 +106,7 @@ class StockTradingEnv(gym.Env):
         
         self.current_step += 1
         
-        if self.current_step == len(self.data['adj_close']):
+        if self.current_step == len(self.data[ColumnNames.CLOSE]):
             done = True
         else:
             done = False

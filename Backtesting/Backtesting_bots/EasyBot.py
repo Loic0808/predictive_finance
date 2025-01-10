@@ -2,15 +2,7 @@ import pandas as pd
 import numpy as np
 
 from Backtesting.Backtesting import BacktestColumnNames
-
-class ColumnNames:
-    HIGH = "high"
-    LOW = "low"
-    OPEN = "open"
-    CLOSE = "close"
-    EMA_50 = "EMA_50"
-    TIMESTAMP = "timestamp"
-
+from Brokers.Alpaca.Column_names import ColumnNames
 
 class EasyBot:
     def __init__(self, bank_account, stock_qty, df) -> None:

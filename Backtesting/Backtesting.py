@@ -90,21 +90,26 @@ class Backtesting:
         return df
 
     def run_bot(self, trading_bot, df):
-        file_path = f"Backtesting/Backtesting_data/EasyBot/start_{self.start_date}_end_{self.end_date}_asset{self.asset_list}.csv"
-        list_path = f"Backtesting/Backtesting_data/EasyBot/start_{self.start_date}_end_{self.end_date}_asset{self.asset_list}.pkl"
-        if os.path.exists(file_path):
-            self.backtest_df = pd.read_csv(file_path)
-            with open(list_path, 'rb') as file:
-                self.log_info_list = pickle.load(file)
-        else:
+        
+        ####################################################################################
+        ##Uncomment this once I want to really start backtesting and not implement anymore##
+        ####################################################################################
+
+        #file_path = f"Backtesting/Backtesting_data/EasyBot/start_{self.start_date}_end_{self.end_date}_asset{self.asset_list}.csv"
+        #list_path = f"Backtesting/Backtesting_data/EasyBot/start_{self.start_date}_end_{self.end_date}_asset{self.asset_list}.pkl"
+        #if os.path.exists(file_path):
+        #    self.backtest_df = pd.read_csv(file_path)
+        #    with open(list_path, 'rb') as file:
+        #        self.log_info_list = pickle.load(file)
+        if True: #else:
             self.trading_bot = trading_bot
             self.trading_bot.run_strat(df)
             self.backtest_df = self.trading_bot.backtesting
             self.log_info_list = self.trading_bot.log_info
 
-            self.backtest_df.to_csv(file_path, index=False)
-            with open(list_path, 'wb') as file:
-                pickle.dump(self.log_info_list, file)
+            #self.backtest_df.to_csv(file_path, index=False)
+            #with open(list_path, 'wb') as file:
+            #    pickle.dump(self.log_info_list, file)
 
         return self.backtest_df, self.log_info_list
 
