@@ -10,9 +10,8 @@ def delete_csv_if_exists(file_path):
             os.remove(file_path)
             
 
-#file_name = 'Data/live_data.csv'
-#delete_csv_if_exists(file_name)
-i = 1
+file_name = 'Data/live_data.csv'
+delete_csv_if_exists(file_name)
 
 api_key = API_KEY
 secret_key = SECRET_KEY
@@ -24,8 +23,6 @@ data_stream_list = []
 
 async def stock_data_stream_handler(bar):
     global data_stream_list
-    ### Testing 
-    global i
     data = {
         'timestamp': [bar.timestamp],
         'open': [bar.open],
@@ -36,11 +33,9 @@ async def stock_data_stream_handler(bar):
     }
     data_stream_list.append(data)
     df = pd.DataFrame(data_stream_list)
-    ###
-    file_name = f"Data/live_data_{i}.csv"
-    df.to_csv(file_name, index=False) 
-    ### 
-    i+=1
+
+    if not df.empty:
+        df.to_csv(file_name, index=False) 
 
 
 symbols = [symbol]

@@ -20,7 +20,7 @@ from Trading_bots.Connected_EasyBot import EasyBot
 api_key = API_KEY
 secret_key = SECRET_KEY
 
-#file_path = '/Users/doblerloic/Desktop/Finance_prediction_project/predictive_finance/Brokers/Alpaca/Data/live_data.csv'
+file_path = '/Users/doblerloic/Desktop/Finance_prediction_project/predictive_finance/Brokers/Alpaca/Data/live_data.csv'
 
 symbol = "TSLA"
 
@@ -100,9 +100,6 @@ def is_market_open():
 
 while True:
     if is_market_open():
-        ###
-        file_path = f'/Users/doblerloic/Desktop/Finance_prediction_project/predictive_finance/Brokers/Alpaca/Data/live_data_{i}.csv'
-        ###
 
         if not os.path.exists(file_path):
             print("Data loss")
@@ -140,31 +137,10 @@ while True:
             else:
                 continue
         
-        """# Handle first minute and times where we have data loss
-        else:
-            continue
-            #timemodule.sleep(30)
-            #print("sleep")"""
     else:
         print("Market is closed.")
         break  
 
-
-"""dataF = EMA(dataF).EMA_50(50)
-dataF = ATR(dataF).calculate_chandelier_exit()
-
-# Read data candles every minute
-data_stream = StockDataStream(api_key, secret_key)
-data_of_interest = dataF[-len(df_stream):]
-
-res = trading_bot.run_strat(data_of_interest)
-
-if res:
-        data_stream_list = []
-
-while True:
-        read_and_process_csv(file_path)
-        time.sleep(interval)"""
 
 
 
