@@ -100,7 +100,7 @@ class EasyBot:
         """If the breakcoutcandle is 3 or 4 times bigger than the mean hight of candles before, then the trade is invalid"""
 
         df["AbsDiff"] = (df[ColumnNames.CLOSE] - df[ColumnNames.OPEN]).abs()
-        mean_abs_diff = df["AbsDiff"].iloc[:50].mean()
+        mean_abs_diff = df["AbsDiff"].iloc[-10:].mean() 
 
         if self.len_high_point_candle >= 3 * mean_abs_diff:
             return True
