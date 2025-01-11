@@ -9,7 +9,7 @@ from Utils.Indicators import EMA, ATR
 
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 
-model_name = "Easy_DRL_v1"
+model_name = "Easy_DRL_v1.2"
 bank_account = 10000
 commission_fee = 0.01
 slippage_cost = 0.1
@@ -24,7 +24,7 @@ if not Trainer.zip_file_exists():
     print("Path does not exist, train the model")
     # Format is (YYYY, MM, DD)
     start_date_train = datetime(2024, 1, 1) 
-    end_date_train = datetime(2024, 1, 8)
+    end_date_train = datetime(2024, 5, 1)
 
     df_train = Trainer.create_dataframe(
         api_key=API_KEY,
@@ -43,10 +43,8 @@ else:
 ##Load and run DRL bot##
 ########################
 
-start_date_run = datetime(2024, 1, 8) 
-end_date_run = datetime(2024, 1, 11)
-
-trade_type = "long"
+start_date_run = datetime(2024, 5, 1) 
+end_date_run = datetime(2024, 7, 1)
 
 backtesting = Backtesting()
 
@@ -68,7 +66,9 @@ data_df = ATR(data_df).calculate_chandelier_exit()
 
 DRL_bot = DRLBotV1(model_name, bank_account, commission_fee, slippage_cost)
 
-backtesting.run_bot(DRL_bot, data_df)
+backtesting_df = backtesting.run_bot(DRL_bot, data_df)
+
+print(backtesting_df)
 
 """
 backtesting_df, log_info_list = backtesting.run_bot(easy_bot, data_df)

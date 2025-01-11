@@ -61,4 +61,4 @@ class TrainDRLModels():
         # Initialize, train and save the model
         trained_model = PPO("MlpPolicy", env_train, verbose=0)
         trained_model.learn(total_timesteps=100_000, progress_bar=True)
-        trained_model.save(self.path)
+        trained_model.save(self.path_to_model)

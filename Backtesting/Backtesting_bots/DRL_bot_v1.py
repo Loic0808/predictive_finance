@@ -42,6 +42,7 @@ class DRLBotV1(AbstractBot):
             action, _state = run_model.predict(obs)
             obs, reward, done, info = vec_env.step(action)
             
+        self.backtesting_df = env_test.backtesting_df
         env_test.render_all()
 
 
@@ -55,6 +56,8 @@ class StockTradingEnv(gym.Env):
         self.stock_owned = 0
         self.date = data[ColumnNames.TIMESTAMP]
         self.stock_price_history = data[ColumnNames.CLOSE]
+        self.stock_high_price_history = data[ColumnNames.HIGH]
+        self.stock_low_price_history = data[ColumnNames.LOW]
         self.commission_fee = commission_fee
         self.slippage_cost = slippage_cost
         
@@ -69,42 +72,50 @@ class StockTradingEnv(gym.Env):
         self.render_df = pd.DataFrame()
         self.done = False
         self.current_portfolio_value = initial_balance
+
+        # Own added variables 
         self.in_trade = False
+        self.max_price = -np.inf
+        self.min_price = np.inf
+        self.last_action = 0
         self.buy_info = []
 
         """
-        All the backtesting/monitoring information will be stored here
+        All the backtesting/monitoring information will be stored here. We enter a trade when we buy or sell a stock
+        we don't exit this trade as long as we don't to the opposite action, i.e., even if we buy multiple times, as long as
+        we don't sell a stock we are still in the trade
         """
         self.backtesting_columns = [
-            BacktestColumnNames.TIMESTAMP_BUY,
+            BacktestColumnNames.TIMESTAMP,
             BacktestColumnNames.ENTRY_PRICE,
             BacktestColumnNames.STOP_LOSS,
             BacktestColumnNames.TAKE_PROFIT,
             BacktestColumnNames.STOCKS_TRADED, 
-            BacktestColumnNames.EXIT_PRICE,
-            BacktestColumnNames.EXIT_PATTERN, 
             BacktestColumnNames.MAX_PRICE,
             BacktestColumnNames.MIN_PRICE,
             BacktestColumnNames.TRADE_TYPE,
             BacktestColumnNames.IN_TRADE,
+            BacktestColumnNames.EXIT_PRICE,
         ]
         self.backtesting_df = pd.DataFrame(columns=self.backtesting_columns)
-        self.backtesting_df = self.backtesting.astype(
+        self.backtesting_df = self.backtesting_df.astype(
             {
-                BacktestColumnNames.TIMESTAMP_BUY: 'datetime64[ns]',
+                BacktestColumnNames.TIMESTAMP: 'datetime64[ns]',
                 BacktestColumnNames.ENTRY_PRICE: float,
                 BacktestColumnNames.STOP_LOSS: float,
                 BacktestColumnNames.TAKE_PROFIT: float,
                 BacktestColumnNames.STOCKS_TRADED: int,
-                BacktestColumnNames.EXIT_PRICE: float,
-                BacktestColumnNames.EXIT_PATTERN: str,
                 BacktestColumnNames.MAX_PRICE: float,
                 BacktestColumnNames.MIN_PRICE: float,
                 BacktestColumnNames.TRADE_TYPE: str,
                 BacktestColumnNames.IN_TRADE: bool,
+                BacktestColumnNames.EXIT_PRICE: float,
             }
         )
-        self.log_info = []
+
+    def group_backtesting(self):
+        # We need to group by actions
+        pass
         
     def reset(self, seed = None):
         self.current_step = 0
@@ -113,6 +124,9 @@ class StockTradingEnv(gym.Env):
         self.done = False
         self.current_portfolio_value = self.initial_balance
         self.in_trade = False
+        self.max_price = -np.inf
+        self.min_price = np.inf
+        self.last_action = 0
         self.buy_info = []
         return self._get_observation(), {}
     
@@ -121,20 +135,135 @@ class StockTradingEnv(gym.Env):
         prev_portfolio_value = self.balance if self.current_step == 0 else self.balance + self.stock_owned * self.stock_price_history[self.current_step - 1]
         current_price = self.stock_price_history[self.current_step]    
         amount = int(self.initial_balance * action[1] / current_price)
+
+        # If we are in trading, at each step we calculate the max and min price of the asset
+        if self.in_trade:
+            self.max_price = max(self.max_price, self.stock_high_price_history[self.current_step])
+            self.min_price = min(self.min_price, self.stock_low_price_history[self.current_step])
     
         if action[0] > 0:  # Buy
-            amount =  min( int(self.initial_balance * action[1] / current_price), int(self.balance / current_price * (1 + self.commission_fee + self.slippage_cost)))
+            amount =  min(int(self.initial_balance * action[1] / current_price), int(self.balance / current_price * (1 + self.commission_fee + self.slippage_cost)))
             if self.balance >= current_price * amount * (1 + self.commission_fee + self.slippage_cost):
                 self.stock_owned += amount
                 self.balance -= current_price * amount * (1 + self.commission_fee + self.slippage_cost)
-                self.buy_info.append(self.date[self.current_step])
+
+                if self.in_trade:
+                    # We are in a trade
+                    if self.last_action == -1:
+                        # We exit the trade
+                        self.buy_info.extend([
+                            self.date[self.current_step], # date of action
+                            None, # There can be multiple entry prices before
+                            None, # Stop loss
+                            None, # Take profit
+                            amount, # Number of stocks traded
+                            self.max_price, # max price
+                            self.min_price, # min price
+                            self.trade_type, # long or short
+                            self.in_trade, # Tells if we trade or not
+                            self.stock_price_history[self.current_step] # exit price
+                        ])
+
+                        self.max_price = -np.inf
+                        self.min_price = np.inf
+                        self.in_trade = False 
+                        self.last_action = 1
+
+                    else:
+                        # We continue in the same trade 
+                        self.buy_info.extend([
+                            self.date[self.current_step], 
+                            self.stock_price_history[self.current_step],
+                            None, 
+                            None, 
+                            amount, 
+                            None, 
+                            None, 
+                            self.trade_type, 
+                            self.in_trade, 
+                            None
+                        ])
+
+                else:
+                    # We enter a trade
+                    self.trade_type = "long"
+                    self.in_trade = True
+                    self.last_action = 1
+
+                    self.buy_info.extend([
+                            self.date[self.current_step], 
+                            self.stock_price_history[self.current_step],
+                            None, 
+                            None, 
+                            amount, 
+                            None, 
+                            None, 
+                            self.trade_type, 
+                            self.in_trade, 
+                            None 
+                        ])
 
         elif action[0] < 0:  # Sell
             amount = min(amount, self.stock_owned)
             if self.stock_owned > 0:
                 self.stock_owned -= amount
                 self.balance += current_price * amount * (1 - self.commission_fee - self.slippage_cost)
-                self.buy_info.append(self.date[self.current_step])
+
+                if self.in_trade:
+                    # We are in a trade
+                    if self.last_action == 1:
+                        # We exit the trade
+                        self.buy_info.extend([
+                            self.date[self.current_step], # date of action
+                            None, # There can be multiple entry prices before
+                            None, # Stop loss
+                            None, # Take profit
+                            amount, # Number of stocks traded
+                            self.max_price, # max price
+                            self.min_price, # min price
+                            self.trade_type, # long or short
+                            self.in_trade, # Tells if we trade or not
+                            self.stock_price_history[self.current_step] # exit price
+                        ])
+
+                        self.max_price = -np.inf
+                        self.min_price = np.inf
+                        self.in_trade = False 
+                        self.last_action = -1
+
+                    else:
+                        # We continue in the same trade 
+                        self.buy_info.extend([
+                            self.date[self.current_step], 
+                            self.stock_price_history[self.current_step],
+                            None, 
+                            None, 
+                            amount, 
+                            None, 
+                            None, 
+                            self.trade_type, 
+                            self.in_trade, 
+                            None
+                        ])
+
+                else:
+                    # We enter a trade
+                    self.trade_type = "short"
+                    self.in_trade = True
+                    self.last_action = -1
+
+                    self.buy_info.extend([
+                            self.date[self.current_step], 
+                            self.stock_price_history[self.current_step],
+                            None, 
+                            None, 
+                            amount, 
+                            None, 
+                            None, 
+                            self.trade_type, 
+                            self.in_trade, 
+                            None 
+                        ])
         
         current_portfolio_value = self.balance + self.stock_owned * current_price
         excess_return = current_portfolio_value - prev_portfolio_value 
@@ -142,6 +271,11 @@ class StockTradingEnv(gym.Env):
         std_deviation = np.std(self.stock_price_history[:self.current_step + 1])
         sharpe_ratio = (excess_return - risk_free_rate) / std_deviation if std_deviation != 0 else 0
         reward = sharpe_ratio
+
+        if len(self.buy_info) > 0:
+            new_data = pd.DataFrame([self.buy_info], columns=self.backtesting_columns)
+            self.backtesting_df = pd.concat([self.backtesting_df, new_data], ignore_index=True)
+            self.buy_info = []
          
         self.render(action, amount, current_portfolio_value)
         obs = self._get_observation()

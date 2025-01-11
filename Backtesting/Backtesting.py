@@ -11,7 +11,7 @@ from alpaca.data.requests import StockBarsRequest
 
 # This Backtesting class is only build on the Alpaca Broker for now
 class BacktestColumnNames:
-    TIMESTAMP_BUY = "Timestamp_buy"
+    TIMESTAMP= "Timestamp"
     ENTRY_PRICE = "Entry_price" # Price when we buy for long and sell for short
     STOP_LOSS = "Stop_loss"
     TAKE_PROFIT = "Take_profit"
@@ -110,14 +110,14 @@ class Backtesting:
             self.trading_bot = trading_bot
             self.trading_bot.run_strat(df)
             # Does not exist yet for DRL bot
-            #self.backtest_df = self.trading_bot.backtesting # uncomment
+            self.backtest_df = self.trading_bot.backtesting_df # uncomment
             #self.log_info_list = self.trading_bot.log_info # uncomment
 
             #self.backtest_df.to_csv(file_path, index=False)
             #with open(list_path, 'wb') as file:
             #    pickle.dump(self.log_info_list, file)
 
-        #return self.backtest_df, self.log_info_list # uncomment
+        return self.backtest_df #, self.log_info_list # uncomment
 
     def calculate_profit_and_loss(self, df, trade_type: str):
         if trade_type == "long":
