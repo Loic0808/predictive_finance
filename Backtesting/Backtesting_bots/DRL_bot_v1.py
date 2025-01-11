@@ -4,6 +4,7 @@ import gymnasium as gym
 from gymnasium import spaces
 import pandas as pd
 import matplotlib.pyplot as plt 
+from stable_baselines3 import PPO
 
 from Trading_bots.Abstract_Bot import AbstractBot
 from Backtesting.Backtesting import BacktestColumnNames
@@ -14,36 +15,31 @@ class DRLBotV1(AbstractBot):
 
     def __init__(
             self,
-            model,
+            model_name,
             bank_account, 
             commission_fee,
             slippage_cost
             ):
-        self.model = model
         self.bank_account = bank_account
         self.commission_fee = commission_fee
         self.slippage_cost = slippage_cost
 
         # Path to save the models
-        self.path = "/Users/doblerloic/Desktop/Finance_prediction_project/predictive_finance/DRL_backtest_models"
+        self.path = f"/Users/doblerloic/Desktop/Finance_prediction_project/predictive_finance/Backtesting/DRL_backtest_models/models/{model_name}"
 
-    def train_model(self, df_train):
-        # Initialize the environment for the bot
-        env_train = StockTradingEnv(df_train, self.bank_account, self.commission_fee, self.slippage_cost)
-        # Initialize, train and save the model
-        self.trained_model = self.model("MlpPolicy", env_train, verbose=0)
-        self.trained_model.learn(total_timesteps=100_000, progress_bar=True)
-        self.trained_model.save(self.path)
+    def train_model(self):
+        # call train model class
+        pass
 
     def run_strat(self, df):
         # Initialize the testing environment and load the model
         env_test = StockTradingEnv(df, self.bank_account, self.commission_fee, self.slippage_cost)
-        self.run_model = self.trained_model.load(self.path, env=env_test)
+        run_model = PPO.load(self.path, env=env_test)
 
-        vec_env = self.run_model.get_env()
+        vec_env = run_model.get_env()
         obs = vec_env.reset()
         for i in range(len(df[ColumnNames.CLOSE])):
-            action, _state = self.run_model.predict(obs)
+            action, _state = run_model.predict(obs)
             obs, reward, done, info = vec_env.step(action)
             
         env_test.render_all()
@@ -138,7 +134,9 @@ class StockTradingEnv(gym.Env):
         self.render_df = pd.concat([self.render_df, step_df], ignore_index=True)
     
     def render_all(self):
-        df = self.render_df.set_index('Date')       
+        df = self.render_df.set_index('Date')   
+        print(df)    
+        """
         fig, ax = plt.subplots(figsize=(18, 6)) 
         df.plot( y="market_value" , use_index=True,  ax = ax, style='--' , color='lightgrey') 
         df.plot( y="price" , use_index=True,  ax = ax , secondary_y = True , color='black')
@@ -157,4 +155,5 @@ class StockTradingEnv(gym.Env):
                     df.loc[idx]["price"] + 1,
                     'rv'
                     )
-                plt.text(idx, df.loc[idx]["price"] + 3, df.loc[idx]['amount'], c= 'red',fontsize=8, horizontalalignment='center', verticalalignment='center')  
+                plt.text(idx, df.loc[idx]["price"] + 3, df.loc[idx]['amount'], c= 'red',fontsize=8, horizontalalignment='center', verticalalignment='center')
+        """

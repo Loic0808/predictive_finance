@@ -5,7 +5,6 @@ import pandas as pd
 
 from datetime import datetime
 
-from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockBarsRequest
 
