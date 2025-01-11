@@ -95,7 +95,8 @@ class StockTradingEnv(gym.Env):
         self.render_df = pd.concat([self.render_df, step_df], ignore_index=True)
     
     def render_all(self):
-        df = self.render_df.set_index('Date')       
+        df = self.render_df.set_index('Date')   
+        print(df)    
         fig, ax = plt.subplots(figsize=(18, 6)) 
         df.plot( y="market_value" , use_index=True,  ax = ax, style='--' , color='lightgrey') 
         df.plot( y="price" , use_index=True,  ax = ax , secondary_y = True , color='black')
