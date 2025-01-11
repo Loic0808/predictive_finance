@@ -69,8 +69,27 @@ data_df = ATR(data_df).calculate_chandelier_exit()
 DRL_bot = DRLBotV1(model_name, bank_account, commission_fee, slippage_cost)
 
 backtesting.run_bot(DRL_bot, data_df)
-#backtesting_df, log_info_list = backtesting.run_bot(easy_bot, data_df)
 
+"""
+backtesting_df, log_info_list = backtesting.run_bot(easy_bot, data_df)
+
+backtesting_df = backtesting.calculate_profit_and_loss(backtesting_df, trade_type)
+backtesting_df = backtesting.calculate_MAE_MFE(backtesting_df, trade_type)
+backtesting_df = backtesting.calculate_risk_to_reward(backtesting_df, trade_type)
+backtesting_df = backtesting.monetary_gains(backtesting_df, trade_type)
+
+#print(backtesting_df)
+#print(log_info_list)
+
+print("Gains, losses and net profit", backtesting.net_profit(backtesting_df))
+print("Winning rate", backtesting.win_rate(backtesting_df))
+print("Profit factor", backtesting.profit_factor(backtesting_df))
+print("Average win/loss", backtesting.average_win_over_loss(backtesting_df))
+print("Risk reward ration", backtesting.risk_reward_ratio(backtesting_df))
+print("Profitability", backtesting.profitability(backtesting_df))
+print("Consistency", backtesting.consistency(backtesting_df))
+print("Equity curve simulation", backtesting.equity_curve_simulation(backtesting_df, bank_account))
+"""
 
 
 

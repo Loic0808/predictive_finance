@@ -59,11 +59,52 @@ class StockTradingEnv(gym.Env):
         self.slippage_cost = slippage_cost
         
         self.action_space = spaces.Box(low=np.array([-1, 0]), high=np.array([1, 1]), shape=(2,))  # (Action, Amount) where Action: -1: Buy, 0: Hold, 1: Sell
+        #  _____________
+        # |Action|Amount|
+        # |    +1|    +1|
+        # |    -1|     0|
+        #
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(1,))
         
         self.render_df = pd.DataFrame()
         self.done = False
         self.current_portfolio_value = initial_balance
+        self.in_trade = False
+        self.buy_info = []
+
+        """
+        All the backtesting/monitoring information will be stored here
+        """
+        self.backtesting_columns = [
+            BacktestColumnNames.TIMESTAMP_BUY,
+            BacktestColumnNames.ENTRY_PRICE,
+            BacktestColumnNames.STOP_LOSS,
+            BacktestColumnNames.TAKE_PROFIT,
+            BacktestColumnNames.STOCKS_TRADED, 
+            BacktestColumnNames.EXIT_PRICE,
+            BacktestColumnNames.EXIT_PATTERN, 
+            BacktestColumnNames.MAX_PRICE,
+            BacktestColumnNames.MIN_PRICE,
+            BacktestColumnNames.TRADE_TYPE,
+            BacktestColumnNames.IN_TRADE,
+        ]
+        self.backtesting_df = pd.DataFrame(columns=self.backtesting_columns)
+        self.backtesting_df = self.backtesting.astype(
+            {
+                BacktestColumnNames.TIMESTAMP_BUY: 'datetime64[ns]',
+                BacktestColumnNames.ENTRY_PRICE: float,
+                BacktestColumnNames.STOP_LOSS: float,
+                BacktestColumnNames.TAKE_PROFIT: float,
+                BacktestColumnNames.STOCKS_TRADED: int,
+                BacktestColumnNames.EXIT_PRICE: float,
+                BacktestColumnNames.EXIT_PATTERN: str,
+                BacktestColumnNames.MAX_PRICE: float,
+                BacktestColumnNames.MIN_PRICE: float,
+                BacktestColumnNames.TRADE_TYPE: str,
+                BacktestColumnNames.IN_TRADE: bool,
+            }
+        )
+        self.log_info = []
         
     def reset(self, seed = None):
         self.current_step = 0
@@ -71,6 +112,8 @@ class StockTradingEnv(gym.Env):
         self.stock_owned = 0
         self.done = False
         self.current_portfolio_value = self.initial_balance
+        self.in_trade = False
+        self.buy_info = []
         return self._get_observation(), {}
     
     def step(self, action):
@@ -84,11 +127,14 @@ class StockTradingEnv(gym.Env):
             if self.balance >= current_price * amount * (1 + self.commission_fee + self.slippage_cost):
                 self.stock_owned += amount
                 self.balance -= current_price * amount * (1 + self.commission_fee + self.slippage_cost)
+                self.buy_info.append(self.date[self.current_step])
+
         elif action[0] < 0:  # Sell
             amount = min(amount, self.stock_owned)
             if self.stock_owned > 0:
                 self.stock_owned -= amount
                 self.balance += current_price * amount * (1 - self.commission_fee - self.slippage_cost)
+                self.buy_info.append(self.date[self.current_step])
         
         current_portfolio_value = self.balance + self.stock_owned * current_price
         excess_return = current_portfolio_value - prev_portfolio_value 

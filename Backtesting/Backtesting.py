@@ -12,20 +12,26 @@ from alpaca.data.requests import StockBarsRequest
 # This Backtesting class is only build on the Alpaca Broker for now
 class BacktestColumnNames:
     TIMESTAMP_BUY = "Timestamp_buy"
-    ENTRY_PRICE = "Entry_price"
+    ENTRY_PRICE = "Entry_price" # Price when we buy for long and sell for short
     STOP_LOSS = "Stop_loss"
     TAKE_PROFIT = "Take_profit"
-    EXIT_PRICE = "Exit_price"
-    STOCKS_TRADED = "Stocks_traded"
+    EXIT_PRICE = "Exit_price" # Price when we sell for long and buy for short
+    STOCKS_TRADED = "Stocks_traded" # Amout of traded stocks
     EXIT_PATTERN = "Exit_pattern"
     MAX_PRICE = "Max_price_during_trade"
     MIN_PRICE = "Min_price_during_trade"
+    TRADE_TYPE = "Trade_type"
+    IN_TRADE = "In_trade" # is True if we are in a trade (either long or short) and False when not *
     PROFIT_LOSS = "profit/loss"
     MAE = "MAE"
     MFE = "MFE"
     REWARD_TO_RISK = "Reward_to_risk"
     MONETARY_GAIN = "Monetary_gain"
 
+    """
+    * this is usefull so that we don't mix up the trades, for example if we first buy and then sell, we are in a long trade. If we buy after we enter again 
+    in a long trade, but we could mix this up if we see only the sell and then buy in between. We will then have the In_trade column filled with False.
+    """
 
 class Backtesting:
     """
