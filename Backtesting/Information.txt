@@ -1,7 +1,0 @@
-The idea of the backtesting bots is the following: regardless of the type of bot (deep reinforcement learning,
-strategy as code,...) we have a class with a certain number of features that we want, which we implemengt in the 
-form of class methods. All bots share these features and they allow to access information about the trades, for 
-backtesting and also for transparency. 
-
-In addition to this, in the backtesting folder, we have the run backtest functions which allow to run the bots on 
-historical data and to give the information about the performance.

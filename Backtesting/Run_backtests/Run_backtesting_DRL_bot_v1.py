@@ -1,43 +1,46 @@
 from datetime import datetime
 
 from Backtesting.Backtesting_bots.DRL_bot_v1 import DRLBotV1
-from Backtesting.DRL_backtest_models.Train_models import TrainDRLModels
+from Backtesting.Backtesting_bots.DRL_bot_v2 import DRLBotV2
+
 from Backtesting.Backtesting import Backtesting
+from Backtesting.Create_dataframes import CreateDataframe
 
 from Brokers.Alpaca.Alpaca_keyes import API_KEY, SECRET_KEY
 from Utils.Indicators import EMA, ATR
 
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 
-model_name = "Easy_DRL_v1.2"
+model_name = "Easy_DRL_v3"
 bank_account = 10000
 commission_fee = 0.01
 slippage_cost = 0.1
+
+# Object which allows to create historical dataframes
+create_df = CreateDataframe()
+# Object which allows to backtest a strategy
+backtesting = Backtesting()
+# DRL bot
+DRL_bot = DRLBotV2(model_name, bank_account, commission_fee, slippage_cost)
 
 ###########################
 ##Training of the DRL bot##
 ###########################
 
-Trainer = TrainDRLModels(model_name, bank_account, commission_fee, slippage_cost)
+# Format is (YYYY, MM, DD)
+start_date_train = datetime(2024, 1, 1) 
+end_date_train = datetime(2024, 5, 1)
 
-if not Trainer.zip_file_exists():
-    print("Path does not exist, train the model")
-    # Format is (YYYY, MM, DD)
-    start_date_train = datetime(2024, 1, 1) 
-    end_date_train = datetime(2024, 5, 1)
+df_train = create_df.Alpaca(
+    api_key=API_KEY,
+    secret_key=SECRET_KEY,
+    start_date=start_date_train,
+    end_date=end_date_train,
+    interval=TimeFrame(amount = 1, unit = TimeFrameUnit.Minute),
+    asset_list="TSLA"
+)
 
-    df_train = Trainer.create_dataframe(
-        api_key=API_KEY,
-        secret_key=SECRET_KEY,
-        start_date=start_date_train,
-        end_date=end_date_train,
-        interval=TimeFrame(amount = 1, unit = TimeFrameUnit.Minute),
-        asset_list="TSLA"
-    )
-
-    Trainer.train_model(df_train)
-else:
-    print("Path does exist, load the model")
+DRL_bot.train_model(df_train)
 
 ########################
 ##Load and run DRL bot##
@@ -46,9 +49,7 @@ else:
 start_date_run = datetime(2024, 5, 1) 
 end_date_run = datetime(2024, 7, 1)
 
-backtesting = Backtesting()
-
-data_df = backtesting.create_dataframe(
+data_df = create_df.Alpaca(
     api_key=API_KEY,
     secret_key=SECRET_KEY,
     start_date=start_date_run,
@@ -61,10 +62,10 @@ if data_df.empty:
     raise Exception("Empty dataframe")
 
 
-data_df = EMA(data_df).EMA_50(50)
-data_df = ATR(data_df).calculate_chandelier_exit()
+#data_df = EMA(data_df).EMA_50(50)
+#data_df = ATR(data_df).calculate_chandelier_exit()
 
-DRL_bot = DRLBotV1(model_name, bank_account, commission_fee, slippage_cost)
+print(data_df)
 
 backtesting_df = backtesting.run_bot(DRL_bot, data_df)
 

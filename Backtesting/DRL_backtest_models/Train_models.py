@@ -32,28 +32,6 @@ class TrainDRLModels():
         zip_file_path = os.path.join(self.directory, self.model_name)
         # Check if the file exists
         return os.path.exists(zip_file_path)
-
-    def create_dataframe(
-        self,
-        api_key,
-        secret_key,
-        start_date: datetime,
-        end_date: datetime,
-        interval: datetime,
-        asset_list: list[str],
-        ):
-
-        """
-        Creates the training dataframe for the DRL bot using the Backtesting class
-        """
-
-        backtesting = Backtesting()
-
-        df_train = backtesting.create_dataframe(api_key, secret_key, start_date, end_date, interval, asset_list)
-
-        # Call class which calculates all the indicators like EMA
-        
-        return df_train
         
     def train_model(self, df_train):
         # Initialize the environment for the bot

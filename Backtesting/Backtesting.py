@@ -5,13 +5,13 @@ import pandas as pd
 
 from datetime import datetime
 
-from alpaca.data.historical import StockHistoricalDataClient
-from alpaca.data.requests import StockBarsRequest
-
-
-# This Backtesting class is only build on the Alpaca Broker for now
 class BacktestColumnNames:
+    # This Backtesting column names are only for the Alpaca Broker
     TIMESTAMP= "Timestamp"
+    ACTIION = "Action"
+    PORTFOLIO_VALUE = "Portfolio_value"
+    CASH = "Cash"
+    STOCKS_OWNED = "Stocks_owned"
     ENTRY_PRICE = "Entry_price" # Price when we buy for long and sell for short
     STOP_LOSS = "Stop_loss"
     TAKE_PROFIT = "Take_profit"
@@ -27,7 +27,6 @@ class BacktestColumnNames:
     MFE = "MFE"
     REWARD_TO_RISK = "Reward_to_risk"
     MONETARY_GAIN = "Monetary_gain"
-
     """
     * this is usefull so that we don't mix up the trades, for example if we first buy and then sell, we are in a long trade. If we buy after we enter again 
     in a long trade, but we could mix this up if we see only the sell and then buy in between. We will then have the In_trade column filled with False.
@@ -47,53 +46,6 @@ class Backtesting:
      to ensure that it performs well under different market conditions.
     """
 
-    def __init__(
-        self,
-        # historical_data_client, not needed for now
-    ):
-        """
-        historical_data_client: Data client to retrieve stocks, options or crypto
-        """
-        pass
-
-    def create_dataframe(
-        self,
-        api_key,
-        secret_key,
-        start_date: datetime,
-        end_date: datetime,
-        interval: datetime,
-        asset_list: list[str],
-    ):
-        """
-        start_date: Date on which we start testing the strategy
-        end_date: Date on which we stop testing the strategy
-        interval: Interval of the incomming data (e.g., 1 min, 15 min, 4 hours, ...)
-        asset_list: List of assets on which we test the strategy
-        trading_bot: Trading strategy
-        """
-        self.start_date = start_date
-        self.end_date = end_date
-        self.asset_list = asset_list
-
-        historical_data_client = StockHistoricalDataClient(api_key, secret_key)
-
-        req = StockBarsRequest(
-            symbol_or_symbols=asset_list,
-            timeframe=interval,
-            start=start_date,
-            end=end_date,
-        )
-
-        df = historical_data_client.get_stock_bars(req).df
-        df = df.reset_index()
-        if df.empty:
-            return df
-
-        df = df.drop(["symbol", "trade_count", "vwap"], axis=1)
-
-        return df
-
     def run_bot(self, trading_bot, df):
         
         ####################################################################################
@@ -107,11 +59,10 @@ class Backtesting:
         #    with open(list_path, 'rb') as file:
         #        self.log_info_list = pickle.load(file)
         if True: #else:
-            self.trading_bot = trading_bot
-            self.trading_bot.run_strat(df)
+            trading_bot.run_strat(df)
             # Does not exist yet for DRL bot
-            self.backtest_df = self.trading_bot.backtesting_df # uncomment
-            #self.log_info_list = self.trading_bot.log_info # uncomment
+            self.backtest_df = trading_bot.get_backtest_df() # uncomment
+            #self.log_info_list = trading_bot.log_info # uncomment
 
             #self.backtest_df.to_csv(file_path, index=False)
             #with open(list_path, 'wb') as file:
