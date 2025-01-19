@@ -8,7 +8,7 @@ from datetime import datetime
 class BacktestColumnNames:
     # This Backtesting column names are only for the Alpaca Broker
     TIMESTAMP= "Timestamp"
-    ACTIION = "Action"
+    ACTION = "Action"
     PORTFOLIO_VALUE = "Portfolio_value"
     CASH = "Cash"
     STOCKS_OWNED = "Stocks_owned"

@@ -156,7 +156,7 @@ class StockTradingEnv(gym.Env):
             BacktestColumnNames.PORTFOLIO_VALUE: [current_portfolio_value],
             BacktestColumnNames.CASH: [self.balance],
             BacktestColumnNames.STOCKS_TRADED: [self.stock_owned],
-            BacktestColumnNames.ACTIION: [today_action],
+            BacktestColumnNames.ACTION: [today_action],
             BacktestColumnNames.STOCKS_OWNED: [amount],
         }
         step_df = pd.DataFrame.from_dict(dict)
