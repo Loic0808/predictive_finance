@@ -1,0 +1,20 @@
+Backtesting allows to monitor the performance of the different trading strategies using statistical methods and indicators. While 
+the bot is running, we track the essential informations like the action (buy, sell or hold), the timestamp, the number of traded
+stocks and the account information. All bots track these informations. The remaining information can be found in the dataframe 
+which is passed to the bot for decision making. This dataframe looks like the following:
+
+                      timestamp      open      high       low     close   volume 
+0     2024-05-01 08:00:00+00:00  179.9000  180.6600  179.9000  180.5000  11582.0  
+1     2024-05-01 08:01:00+00:00  180.5000  180.5100  180.1000  180.2000   7672.0  
+2     2024-05-01 08:02:00+00:00  180.2000  180.2000  180.2000  180.2000   3925.0  
+3     2024-05-01 08:03:00+00:00  180.2000  180.2000  180.1900  180.2000   2949.0  
+4     2024-05-01 08:04:00+00:00  180.2000  180.8000  180.2000  180.8000   8189.0  
+...                         ...       ...       ...       ...       ...      ... 
+35593 2024-06-28 23:55:00+00:00  197.8199  197.8199  197.7518  197.7518    903.0 
+35594 2024-06-28 23:56:00+00:00  197.7600  197.7900  197.7600  197.7900   2431.0 
+35595 2024-06-28 23:57:00+00:00  197.8200  197.8200  197.7900  197.8000   1631.0 
+35596 2024-06-28 23:58:00+00:00  197.8200  197.8800  197.8000  197.8800   3913.0 
+35597 2024-06-28 23:59:00+00:00  197.8100  197.8800  197.7800  197.8000   4980.0 
+
+We clearly have all the remaining information there. The run_strategy method in each bot will then return the dataframe with the 
+above informations. The run_bot method in the Backtesting class will then access this dataframe and work with it.

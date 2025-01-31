@@ -2,15 +2,7 @@ import pandas as pd
 import numpy as np
 
 from Backtesting.Backtesting import BacktestColumnNames
-
-class ColumnNames:
-    HIGH = "high"
-    LOW = "low"
-    OPEN = "open"
-    CLOSE = "close"
-    EMA_50 = "EMA_50"
-    TIMESTAMP = "timestamp"
-
+from Brokers.Alpaca.Column_names import ColumnNames
 
 class EasyBot:
     def __init__(self, bank_account, stock_qty, df) -> None:
@@ -29,8 +21,8 @@ class EasyBot:
             BacktestColumnNames.MAX_PRICE,
             BacktestColumnNames.MIN_PRICE,
         ]
-        self.backtesting = pd.DataFrame(columns=self.backtesting_columns)
-        self.backtesting = self.backtesting.astype(
+        self.backtesting_df = pd.DataFrame(columns=self.backtesting_columns)
+        self.backtesting_df = self.backtesting_df.astype(
             {
                 BacktestColumnNames.TIMESTAMP_BUY: 'datetime64[ns]',
                 BacktestColumnNames.ENTRY_PRICE: float,
@@ -155,7 +147,7 @@ class EasyBot:
 
     def __backtesting(self):
         new_data = pd.DataFrame([self.buy_info], columns=self.backtesting_columns)
-        self.backtesting = pd.concat([self.backtesting, new_data], ignore_index=True)
+        self.backtesting_df = pd.concat([self.backtesting_df, new_data], ignore_index=True)
 
     def __steps(self, df):
         if self.step_1 and self.__price_below_EMA(df):
